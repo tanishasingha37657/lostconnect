@@ -1,3 +1,22 @@
+# Dependency directories
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Uploads directory (keep directory tracked with .gitkeep, ignore uploaded images)
+/uploads/*
+!/uploads/.gitkeep
+
 # Temporary Office files
 ~$*
 *.tmp
@@ -6,4 +25,8 @@
 Thumbs.db
 ehthumbs.db
 Desktop.ini
-.DS_Store
+# Runtime database (recreated from seed data on startup)
+data/lostconnect_db.json
+
+# Editor settings
+.vscode/

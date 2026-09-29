@@ -15,13 +15,17 @@
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,400&display=swap"
     rel="stylesheet" />
 
-  <!-- Font Awesome 6 Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Font Awesome 6 Icons (Local with CDN fallback) -->
+  <link rel="stylesheet" href="css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" />
 
-  <!-- Tailwind CSS with Typography and Form plugins -->
-  <script src="https://cdn.tailwindcss.com?plugins=typography,forms"></script>
+  <!-- Tailwind CSS with Typography and Form plugins (Local standalone with CDN fallback) -->
+  <script src="js/tailwind.min.js"></script>
+  <script>
+    if (typeof tailwind === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/tailwindcss-cdn@3.4.10/tailwindcss-with-all-plugins.js"><\/script>');
+    }
+  </script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -88,15 +92,48 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #8EAF93;
     }
+
+    /* Ambient float animation */
+    @keyframes float-gentle {
+
+      0%,
+      100% {
+        transform: translateY(0px) scale(1);
+      }
+
+      50% {
+        transform: translateY(-6px) scale(1.015);
+      }
+    }
+
+    .animate-float {
+      animation: float-gentle 7s ease-in-out infinite;
+    }
+
+    /* Modern subtle glass card */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.84);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(35, 43, 37, 0.07);
+    }
+
+    /* Smooth focus rings */
+    input:focus,
+    select:focus,
+    textarea:focus {
+      box-shadow: 0 0 0 3px rgba(105, 143, 111, 0.18);
+    }
   </style>
 </head>
 
 <body
   class="bg-cream-50 text-earth-800 font-sans antialiased selection:bg-sage-200 selection:text-sage-900 min-h-screen flex flex-col">
 
-  <!-- Toast Notification Alert -->
+  <!-- Toast Notification Alert (Top-level z-index above all modal backdrops) -->
   <div id="toast"
-    class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 bg-sage-800 text-cream-50 px-5 py-3.5 rounded-2xl shadow-soft-xl text-sm font-medium border border-sage-700/50">
+    style="z-index: 9999;"
+    class="fixed bottom-6 right-6 z-[9999] transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 bg-earth-900/95 backdrop-blur-md text-cream-50 px-5 py-3.5 rounded-2xl shadow-soft-xl text-sm font-medium border border-sage-500/40">
     <i id="toastIcon" class="fa-solid fa-circle-check text-sage-300 text-lg"></i>
     <span id="toastMessage">Action completed successfully.</span>
   </div>
@@ -105,28 +142,41 @@
   <!-- 1. NAVBAR (Sticky, Top)                                                   -->
   <!-- ========================================================================= -->
   <header
-    class="sticky top-0 z-40 w-full bg-cream-50/90 backdrop-blur-md border-b border-cream-200/80 transition-all duration-200">
+    class="sticky top-0 z-40 w-full bg-cream-50/85 backdrop-blur-xl border-b border-earth-800/[0.06] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.03)] transition-all duration-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20">
 
+        <!-- Brand Logo on Left -->
+        <a href="#home" class="flex items-center gap-3 group">
+          <div
+            class="w-10 h-10 rounded-2xl bg-sage-700 text-cream-50 flex items-center justify-center font-bold shadow-soft transition-all duration-300 group-hover:scale-105 group-hover:bg-sage-800">
+            <i
+              class="fa-solid fa-compass text-base text-sage-200 group-hover:rotate-45 transition-transform duration-300"></i>
+          </div>
+          <div class="flex flex-col text-left">
+            <span class="text-lg font-extrabold tracking-tight text-sage-900 leading-none">LostConnect</span>
+            <span class="text-[10px] font-semibold text-sage-600 tracking-wider uppercase mt-1">Campus Portal</span>
+          </div>
+        </a>
+
         <!-- Desktop Navigation Links -->
-        <nav class="hidden md:flex items-center space-x-1 lg:space-x-2 text-sm font-medium text-earth-700">
+        <nav class="hidden md:flex items-center space-x-1 lg:space-x-1.5 text-sm font-medium text-earth-700">
           <a href="#home"
-            class="px-3.5 py-2 rounded-xl text-sage-800 hover:text-sage-900 hover:bg-sage-100/60 transition-colors">Home</a>
+            class="px-3.5 py-2 rounded-xl text-sage-800 hover:text-sage-900 hover:bg-sage-100/70 transition-colors">Home</a>
           <a href="#browse"
-            class="px-3.5 py-2 rounded-xl text-earth-700 hover:text-sage-900 hover:bg-sage-100/60 transition-colors">Browse
+            class="px-3.5 py-2 rounded-xl text-earth-700 hover:text-sage-900 hover:bg-sage-100/70 transition-colors">Browse
             Items</a>
           <a href="#how-it-works"
-            class="px-3.5 py-2 rounded-xl text-earth-700 hover:text-sage-900 hover:bg-sage-100/60 transition-colors">How
+            class="px-3.5 py-2 rounded-xl text-earth-700 hover:text-sage-900 hover:bg-sage-100/70 transition-colors">How
             It Works</a>
           <a href="#my-reports"
-            class="px-3.5 py-2 rounded-xl text-earth-700 hover:text-sage-900 hover:bg-sage-100/60 transition-colors flex items-center gap-1.5">
+            class="px-3.5 py-2 rounded-xl text-earth-700 hover:text-sage-900 hover:bg-sage-100/70 transition-colors flex items-center gap-1.5">
             <span>My Reports</span>
             <span id="navReportsBadge"
               class="hidden px-2 py-0.5 bg-sage-600 text-cream-50 text-[11px] rounded-full font-bold">2</span>
           </a>
           <a href="#security-contact"
-            class="px-3.5 py-2 rounded-xl text-earth-700 hover:text-sage-900 hover:bg-sage-100/60 transition-colors">Security
+            class="px-3.5 py-2 rounded-xl text-earth-700 hover:text-sage-900 hover:bg-sage-100/70 transition-colors">Security
             Desk</a>
         </nav>
 
@@ -136,17 +186,17 @@
           <!-- Guest State: Login & Report Item -->
           <div id="loggedOutNav" class="flex items-center gap-2.5">
             <button onclick="openModal('authModal')"
-              class="px-4 py-2 rounded-xl text-sm font-semibold text-sage-800 hover:bg-sage-100/70 transition">
+              class="px-4 py-2 rounded-xl text-sm font-semibold text-sage-800 hover:bg-sage-100/80 transition">
               Login / Sign Up
             </button>
             <button onclick="requireAuthAndExecute('reportLostModal')"
-              class="px-4 py-2 rounded-xl text-sm font-semibold bg-sage-600 hover:bg-sage-700 text-cream-50 shadow-soft transition-all hover:shadow-soft-md flex items-center gap-2">
+              class="px-4 py-2 rounded-xl text-sm font-semibold bg-sage-600 hover:bg-sage-700 text-cream-50 shadow-soft transition-all hover:shadow-soft-md hover:-translate-y-0.5 flex items-center gap-2">
               <i class="fa-solid fa-plus text-xs"></i>
               <span>Report Item</span>
             </button>
           </div>
 
-          <!-- Logged In State (Tanisha Singha) -->
+          <!-- Logged In State (Test Student) -->
           <div id="loggedInNav" class="hidden items-center gap-3">
             <div class="flex items-center gap-2.5 pl-2">
               <div
@@ -154,7 +204,7 @@
                 TS
               </div>
               <div class="text-left leading-tight hidden lg:block">
-                <span class="text-xs font-bold text-sage-900 block">Tanisha Singha</span>
+                <span class="text-xs font-bold text-sage-900 block">Test Student</span>
                 <span class="text-[10px] text-sage-600 font-medium">Student (MSAIM)</span>
               </div>
             </div>
@@ -210,7 +260,7 @@
 
         <div id="mobileAuthStudent" class="hidden flex-col gap-2">
           <div class="flex items-center justify-between p-3 rounded-xl bg-sage-100">
-            <span class="text-xs font-bold text-sage-900">Tanisha Singha (Student #234109)</span>
+            <span class="text-xs font-bold text-sage-900">Test Student (Student #2600000)</span>
             <button onclick="logoutUser(); toggleMobileMenu();" class="text-xs text-red-600 font-bold">Logout</button>
           </div>
         </div>
@@ -228,37 +278,48 @@
     <!-- 2. HERO SECTION                                                         -->
     <!-- ======================================================================= -->
     <section id="home" class="relative pt-14 pb-16 md:pt-20 md:pb-24 overflow-hidden">
-      <!-- Calm Organic Gradient Glows in Sage & Soft Cream -->
+      <!-- Calm Organic Ambient Glows in Sage & Soft Cream -->
       <div
-        class="absolute -top-24 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-gradient-to-b from-sage-200/45 via-sage-100/25 to-transparent blur-3xl -z-10 pointer-events-none rounded-full">
+        class="absolute -top-28 left-1/2 -translate-x-1/2 w-[760px] h-[400px] bg-gradient-to-b from-sage-200/50 via-sage-100/30 to-transparent blur-3xl -z-10 pointer-events-none rounded-full animate-float">
       </div>
-      <div class="absolute top-1/3 -right-20 w-80 h-80 bg-sage-200/35 blur-2xl -z-10 rounded-full pointer-events-none">
+      <div class="absolute top-1/4 -right-20 w-88 h-88 bg-sage-200/40 blur-3xl -z-10 rounded-full pointer-events-none">
+      </div>
+      <div class="absolute top-1/2 -left-20 w-80 h-80 bg-cream-300/40 blur-3xl -z-10 rounded-full pointer-events-none">
       </div>
 
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 
-        <!-- Campus Badge -->
+        <!-- Live Status Badge with Pulsing Dot -->
         <div
-          class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sage-100 border border-sage-200 text-sage-800 text-xs font-semibold uppercase tracking-wider mb-6 shadow-xs">
-          <span>Christ University Lost &amp; Found Portal</span>
-
+          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-sage-300/60 text-sage-900 text-xs font-semibold shadow-xs mb-6 tracking-normal">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sage-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-sage-600"></span>
+          </span>
+          <span class="text-sage-800 font-semibold">Christ University Central Campus</span>
         </div>
 
         <!-- Hero Headline: LostConnect title with tagline -->
-        <h1 class="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-sage-900 leading-tight mb-10">
-          LostConnect <br />
-          <span class="font-serif italic text-sage-700 font-medium text-2xl sm:text-3xl md:text-4xl block mt-3">Lost
-            something on campus? Let's find it.</span>
+        <h1 class="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-sage-950 leading-[1.08] mb-6">
+          LostConnect
+          <span class="font-serif italic text-sage-700 font-normal text-2xl sm:text-3xl md:text-4xl block mt-3">
+            Lost something on campus? Let's find it.
+          </span>
         </h1>
+
+        <p class="max-w-xl mx-auto text-sm sm:text-base text-earth-600 font-normal leading-relaxed mb-8">
+          A calm, centralized portal connecting students, faculty, and campus security to recover misplaced belongings
+          quickly with intelligent AI matching.
+        </p>
 
         <!-- Two Primary CTA Buttons Side by Side (High-Intent Actions Above the Fold) -->
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
 
           <!-- Primary CTA 1: Report Lost Item (requires login) -->
           <button onclick="requireAuthAndExecute('reportLostModal')"
-            class="w-full sm:w-auto px-7 py-4 rounded-2xl bg-sage-600 hover:bg-sage-700 active:bg-sage-800 text-cream-50 font-semibold text-base shadow-soft-md hover:shadow-soft-xl transition-all duration-200 flex items-center justify-center gap-3 group">
+            class="w-full sm:w-auto px-7 py-4 rounded-2xl bg-sage-600 hover:bg-sage-700 active:bg-sage-800 text-cream-50 font-semibold text-base shadow-soft-md hover:shadow-soft-xl hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-3 group">
             <span
-              class="w-8 h-8 rounded-xl bg-sage-700/50 flex items-center justify-center text-sage-200 group-hover:bg-sage-700 transition">
+              class="w-8 h-8 rounded-xl bg-sage-700/60 flex items-center justify-center text-sage-200 group-hover:bg-sage-700 transition">
               <i class="fa-solid fa-magnifying-glass text-sm"></i>
             </span>
             <span>Report Lost Item</span>
@@ -266,9 +327,9 @@
 
           <!-- Primary CTA 2: Report Found Item (requires login) -->
           <button onclick="requireAuthAndExecute('reportFoundModal')"
-            class="w-full sm:w-auto px-7 py-4 rounded-2xl bg-cream-100 hover:bg-cream-200 active:bg-cream-300 text-sage-900 border border-sage-300/80 font-semibold text-base shadow-soft hover:shadow-soft-md transition-all duration-200 flex items-center justify-center gap-3 group">
+            class="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white/90 hover:bg-white active:bg-cream-200 text-sage-900 border border-sage-300/80 font-semibold text-base shadow-soft hover:shadow-soft-md hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-3 group">
             <span
-              class="w-8 h-8 rounded-xl bg-sage-200/80 flex items-center justify-center text-sage-800 group-hover:bg-sage-300 transition">
+              class="w-8 h-8 rounded-xl bg-sage-100 flex items-center justify-center text-sage-800 group-hover:bg-sage-200 transition">
               <i class="fa-solid fa-hand-holding-heart text-sm"></i>
             </span>
             <span>Report Found Item</span>
@@ -284,7 +345,8 @@
     <!-- 3. QUICK SEARCH BAR                                                     -->
     <!-- ======================================================================= -->
     <section id="search-section" class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 mb-16 z-20">
-      <div class="bg-white/95 rounded-3xl p-4 sm:p-5 shadow-soft-xl border border-cream-300/70 backdrop-blur-md">
+      <div
+        class="bg-white/90 backdrop-blur-xl rounded-3xl p-4 sm:p-5 shadow-[0_12px_35px_-8px_rgba(45,68,50,0.08)] border border-earth-900/[0.06]">
 
         <div class="flex flex-col md:flex-row items-center gap-3">
 
@@ -294,12 +356,19 @@
               <i class="fa-solid fa-search text-base"></i>
             </div>
             <input type="text" id="liveSearchInput" oninput="handleSearchFilter()"
-              placeholder="Search found items (e.g., AirPods, Student ID, Water bottle, Casio calculator)..."
-              class="w-full pl-11 pr-4 py-3.5 bg-cream-50/80 border border-cream-200 rounded-2xl text-sm font-medium text-earth-800 placeholder-earth-400 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-transparent transition" />
-            <button id="clearSearchBtn" onclick="clearSearch()"
-              class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-earth-400 hover:text-earth-600">
-              <i class="fa-solid fa-circle-xmark text-sm"></i>
-            </button>
+              placeholder="Search found items (AirPods, Student ID, Bottle, Casio calculator)..."
+              class="w-full pl-11 pr-24 py-3.5 bg-cream-50/90 border border-cream-200 rounded-2xl text-sm font-medium text-earth-800 placeholder-earth-400 focus:outline-none focus:ring-2 focus:ring-sage-500/40 focus:border-sage-500/50 transition" />
+
+            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center gap-1.5">
+              <kbd
+                class="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-mono text-earth-400 bg-cream-100 rounded-lg border border-cream-300">
+                /
+              </kbd>
+              <button id="clearSearchBtn" onclick="clearSearch()"
+                class="hidden text-earth-400 hover:text-earth-600 p-1">
+                <i class="fa-solid fa-circle-xmark text-sm"></i>
+              </button>
+            </div>
           </div>
 
           <!-- Category Filter Dropdown -->
@@ -308,7 +377,7 @@
               <i class="fa-solid fa-layer-group text-sm"></i>
             </div>
             <select id="categoryFilterSelect" onchange="handleSearchFilter()"
-              class="w-full pl-10 pr-9 py-3.5 bg-cream-50/80 border border-cream-200 rounded-2xl text-sm font-medium text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-transparent transition appearance-none cursor-pointer">
+              class="w-full pl-10 pr-9 py-3.5 bg-cream-50/90 border border-cream-200 rounded-2xl text-sm font-medium text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500/40 focus:border-sage-500/50 transition appearance-none cursor-pointer">
               <option value="all">All Categories</option>
               <option value="electronics">Electronics &amp; Gadgets</option>
               <option value="documents">IDs &amp; Wallets</option>
@@ -328,7 +397,7 @@
               <i class="fa-solid fa-location-dot text-sm"></i>
             </div>
             <select id="locationFilterSelect" onchange="handleSearchFilter()"
-              class="w-full pl-10 pr-9 py-3.5 bg-cream-50/80 border border-cream-200 rounded-2xl text-sm font-medium text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-transparent transition appearance-none cursor-pointer">
+              class="w-full pl-10 pr-9 py-3.5 bg-cream-50/90 border border-cream-200 rounded-2xl text-sm font-medium text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500/40 focus:border-sage-500/50 transition appearance-none cursor-pointer">
               <option value="all">Any Location</option>
               <option value="Central Library">Central Library</option>
               <option value="Block IV Cafeteria">Block IV Cafeteria</option>
@@ -350,7 +419,7 @@
           <span class="text-earth-400 font-semibold uppercase tracking-wider text-[10px] whitespace-nowrap pl-1">Quick
             filter:</span>
           <button onclick="setCategoryPill('all')"
-            class="category-pill active-pill px-3 py-1.5 rounded-xl font-semibold transition whitespace-nowrap bg-sage-600 text-cream-50"
+            class="category-pill active-pill px-3 py-1.5 rounded-xl font-semibold transition whitespace-nowrap bg-sage-600 text-cream-50 shadow-xs"
             data-cat="all">All Items</button>
           <button onclick="setCategoryPill('electronics')"
             class="category-pill px-3 py-1.5 rounded-xl font-medium transition whitespace-nowrap bg-cream-100 text-earth-700 hover:bg-sage-100"
@@ -411,51 +480,67 @@
 
         <!-- CARD 1: AirPods Pro -->
         <article
-          class="item-card group bg-white rounded-3xl border border-cream-200/90 overflow-hidden shadow-soft hover:shadow-soft-xl transition-all duration-300 flex flex-col justify-between"
+          class="item-card group bg-white/90 backdrop-blur-md rounded-3xl border border-cream-200/90 hover:border-sage-400/60 hover:bg-white shadow-soft hover:shadow-soft-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between overflow-hidden"
           data-id="1" data-category="electronics" data-location="Central Library"
           data-title="Apple AirPods Pro (2nd Gen)">
-          <div class="p-6">
-            <div class="flex items-center justify-between gap-2 mb-3">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cream-100 text-sage-800 border border-cream-200">
-                  <i class="fa-solid fa-headphones text-[11px] text-sage-600"></i>
-                  <span>Electronics</span>
-                </span>
-                <span
-                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sage-700 text-cream-50 shadow-xs">
-                  <i class="fa-solid fa-shield-check text-[10px]"></i>
-                  <span>In Custody</span>
-                </span>
-              </div>
-              <span class="text-[11px] font-medium text-earth-400 flex items-center gap-1 whitespace-nowrap">
-                <i class="fa-regular fa-clock text-[10px]"></i>45m ago
-              </span>
+
+          <!-- Sleek Minimal Accent Banner -->
+          <div
+            class="h-28 bg-gradient-to-br from-sage-100/70 via-cream-100/50 to-sage-50/80 p-5 flex items-center justify-between border-b border-cream-200/60 relative overflow-hidden">
+            <div
+              class="absolute -right-4 -bottom-4 w-20 h-20 bg-sage-200/40 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500">
             </div>
 
-            <h3 class="text-lg font-bold text-sage-900 group-hover:text-sage-700 transition">Apple AirPods Pro (2nd
-              Gen)</h3>
-            <p class="text-xs text-earth-600 mt-2 line-clamp-3 leading-relaxed">
-              Found in white MagSafe charging case with a small green silicone strap. Left at Central Block, 6th
-              floor, near round tables.
-            </p>
+            <div
+              class="w-12 h-12 rounded-2xl bg-white/95 backdrop-blur-sm border border-white shadow-xs flex items-center justify-center text-sage-700 text-lg group-hover:scale-110 transition-transform duration-300">
+              <i class="fa-solid fa-headphones"></i>
+            </div>
 
-            <div class="mt-4 pt-3 border-t border-cream-100 flex items-center justify-between text-xs text-earth-500">
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sage-700 text-cream-50 shadow-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+              <span>In Custody</span>
+            </span>
+          </div>
+
+          <div class="p-6 flex-grow flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="inline-flex items-center gap-1 text-xs font-semibold text-sage-800">
+                  <span>Electronics</span>
+                </span>
+                <span class="text-[11px] font-medium text-earth-400 flex items-center gap-1">
+                  <i class="fa-regular fa-clock text-[10px]"></i>45m ago
+                </span>
+              </div>
+
+              <h3
+                class="text-base sm:text-lg font-bold text-sage-900 group-hover:text-sage-700 transition leading-snug">
+                Apple AirPods Pro (2nd Gen)
+              </h3>
+              <p class="text-xs text-earth-600 mt-2 line-clamp-2 leading-relaxed">
+                Found in white MagSafe charging case with a small green silicone strap. Left at Central Block, 6th
+                floor, near round tables.
+              </p>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-cream-100 flex items-center justify-between text-xs text-earth-500">
               <span class="flex items-center gap-1.5 truncate">
                 <i class="fa-solid fa-location-dot text-sage-500"></i>
                 <span class="font-medium text-earth-700 truncate">Central Block, Library</span>
               </span>
-              <span class="text-[11px] text-earth-400 font-mono">#LC-8921</span>
+              <span
+                class="text-[11px] text-earth-500 font-mono bg-cream-100/80 px-2 py-0.5 rounded-md border border-cream-200/70">#LC-8921</span>
             </div>
           </div>
 
           <div class="p-6 pt-0 flex items-center gap-2">
             <button onclick="openItemDetailsModal(1)"
-              class="flex-1 py-2.5 px-3 rounded-xl border border-cream-300 text-xs font-semibold text-earth-700 hover:bg-cream-100 hover:text-sage-900 transition text-center">
+              class="flex-1 py-2.5 px-3 rounded-xl border border-cream-300/80 text-xs font-semibold text-earth-700 hover:bg-cream-100 hover:text-sage-900 transition text-center">
               View Details
             </button>
             <button onclick="requireAuthAndExecuteClaim(1, 'Apple AirPods Pro (2nd Gen)')"
-              class="flex-1 py-2.5 px-3 rounded-xl bg-sage-600 hover:bg-sage-700 text-cream-50 text-xs font-semibold transition text-center shadow-xs">
+              class="flex-1 py-2.5 px-3 rounded-xl bg-sage-600 hover:bg-sage-700 active:bg-sage-800 text-cream-50 text-xs font-semibold transition text-center shadow-xs hover:shadow-soft">
               Claim Item
             </button>
           </div>
@@ -463,51 +548,66 @@
 
         <!-- CARD 2: Student ID Card -->
         <article
-          class="item-card group bg-white rounded-3xl border border-cream-200/90 overflow-hidden shadow-soft hover:shadow-soft-xl transition-all duration-300 flex flex-col justify-between"
+          class="item-card group bg-white/90 backdrop-blur-md rounded-3xl border border-cream-200/90 hover:border-sage-400/60 hover:bg-white shadow-soft hover:shadow-soft-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between overflow-hidden"
           data-id="2" data-category="documents" data-location="Block IV Cafeteria"
           data-title="Christ University Student ID Card">
-          <div class="p-6">
-            <div class="flex items-center justify-between gap-2 mb-3">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cream-100 text-sage-800 border border-cream-200">
-                  <i class="fa-solid fa-id-card text-[11px] text-sage-600"></i>
-                  <span>ID &amp; Documents</span>
-                </span>
-                <span
-                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sage-700 text-cream-50 shadow-xs">
-                  <i class="fa-solid fa-shield-check text-[10px]"></i>
-                  <span>At Reception</span>
-                </span>
-              </div>
-              <span class="text-[11px] font-medium text-earth-400 flex items-center gap-1 whitespace-nowrap">
-                <i class="fa-regular fa-clock text-[10px]"></i>2h ago
-              </span>
+
+          <!-- Sleek Minimal Accent Banner -->
+          <div
+            class="h-28 bg-gradient-to-br from-amber-100/50 via-cream-100/50 to-sage-50/70 p-5 flex items-center justify-between border-b border-cream-200/60 relative overflow-hidden">
+            <div
+              class="absolute -right-4 -bottom-4 w-20 h-20 bg-amber-200/30 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500">
             </div>
 
-            <h3 class="text-lg font-bold text-sage-900 group-hover:text-sage-700 transition">Christ University Student
-              ID Card</h3>
-            <p class="text-xs text-earth-600 mt-2 line-clamp-3 leading-relaxed">
-              Smart chip ID card with blue university lanyard. Initials on name: 'R. K.', Department of Psychology,
-              year 2024–2027.
-            </p>
+            <div
+              class="w-12 h-12 rounded-2xl bg-white/95 backdrop-blur-sm border border-white shadow-xs flex items-center justify-center text-sage-800 text-lg group-hover:scale-110 transition-transform duration-300">
+              <i class="fa-solid fa-id-card"></i>
+            </div>
 
-            <div class="mt-4 pt-3 border-t border-cream-100 flex items-center justify-between text-xs text-earth-500">
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sage-700 text-cream-50 shadow-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+              <span>At Reception</span>
+            </span>
+          </div>
+
+          <div class="p-6 flex-grow flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="inline-flex items-center gap-1 text-xs font-semibold text-sage-800">
+                  <span>IDs &amp; Documents</span>
+                </span>
+                <span class="text-[11px] font-medium text-earth-400 flex items-center gap-1">
+                  <i class="fa-regular fa-clock text-[10px]"></i>2h ago
+                </span>
+              </div>
+
+              <h3
+                class="text-base sm:text-lg font-bold text-sage-900 group-hover:text-sage-700 transition leading-snug">
+                Christ University Student ID Card
+              </h3>
+              <p class="text-xs text-earth-600 mt-2 line-clamp-2 leading-relaxed">
+                Smart chip ID card with blue university lanyard. Initials 'R. K.', Department of Psychology, 2024–2027.
+              </p>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-cream-100 flex items-center justify-between text-xs text-earth-500">
               <span class="flex items-center gap-1.5 truncate">
                 <i class="fa-solid fa-location-dot text-sage-500"></i>
                 <span class="font-medium text-earth-700 truncate">Block IV Cafeteria</span>
               </span>
-              <span class="text-[11px] text-earth-400 font-mono">#LC-8919</span>
+              <span
+                class="text-[11px] text-earth-500 font-mono bg-cream-100/80 px-2 py-0.5 rounded-md border border-cream-200/70">#LC-8919</span>
             </div>
           </div>
 
           <div class="p-6 pt-0 flex items-center gap-2">
             <button onclick="openItemDetailsModal(2)"
-              class="flex-1 py-2.5 px-3 rounded-xl border border-cream-300 text-xs font-semibold text-earth-700 hover:bg-cream-100 hover:text-sage-900 transition text-center">
+              class="flex-1 py-2.5 px-3 rounded-xl border border-cream-300/80 text-xs font-semibold text-earth-700 hover:bg-cream-100 hover:text-sage-900 transition text-center">
               View Details
             </button>
             <button onclick="requireAuthAndExecuteClaim(2, 'Christ University Student ID Card')"
-              class="flex-1 py-2.5 px-3 rounded-xl bg-sage-600 hover:bg-sage-700 text-cream-50 text-xs font-semibold transition text-center shadow-xs">
+              class="flex-1 py-2.5 px-3 rounded-xl bg-sage-600 hover:bg-sage-700 active:bg-sage-800 text-cream-50 text-xs font-semibold transition text-center shadow-xs hover:shadow-soft">
               Claim Item
             </button>
           </div>
@@ -515,51 +615,262 @@
 
         <!-- CARD 3: Hydro Flask -->
         <article
-          class="item-card group bg-white rounded-3xl border border-cream-200/90 overflow-hidden shadow-soft hover:shadow-soft-xl transition-all duration-300 flex flex-col justify-between"
+          class="item-card group bg-white/90 backdrop-blur-md rounded-3xl border border-cream-200/90 hover:border-sage-400/60 hover:bg-white shadow-soft hover:shadow-soft-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between overflow-hidden"
           data-id="3" data-category="accessories" data-location="Audi Block"
-          data-title="Matte Green Hydro Flask Bottle (32oz)">
-          <div class="p-6">
-            <div class="flex items-center justify-between gap-2 mb-3">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cream-100 text-sage-800 border border-cream-200">
-                  <i class="fa-solid fa-bottle-water text-[11px] text-sage-600"></i>
-                  <span>Accessories</span>
-                </span>
-                <span
-                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sage-700 text-cream-50 shadow-xs">
-                  <i class="fa-solid fa-shield-check text-[10px]"></i>
-                  <span>In Custody</span>
-                </span>
-              </div>
-              <span class="text-[11px] font-medium text-earth-400 flex items-center gap-1 whitespace-nowrap">
-                <i class="fa-regular fa-clock text-[10px]"></i>4h ago
-              </span>
+          data-title="Matte Olive Hydro Flask (32oz)">
+
+          <!-- Sleek Minimal Accent Banner -->
+          <div
+            class="h-28 bg-gradient-to-br from-emerald-100/50 via-cream-100/50 to-sage-50/70 p-5 flex items-center justify-between border-b border-cream-200/60 relative overflow-hidden">
+            <div
+              class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-200/30 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500">
             </div>
 
-            <h3 class="text-lg font-bold text-sage-900 group-hover:text-sage-700 transition">Matte Olive Hydro Flask
-              (32oz)</h3>
-            <p class="text-xs text-earth-600 mt-2 line-clamp-3 leading-relaxed">
-              Insulated steel water bottle with straw lid. Has a distinctive coding sticker ("404 Brain Not Found") on
-              the side.
-            </p>
+            <div
+              class="w-12 h-12 rounded-2xl bg-white/95 backdrop-blur-sm border border-white shadow-xs flex items-center justify-center text-sage-800 text-lg group-hover:scale-110 transition-transform duration-300">
+              <i class="fa-solid fa-bottle-water"></i>
+            </div>
 
-            <div class="mt-4 pt-3 border-t border-cream-100 flex items-center justify-between text-xs text-earth-500">
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sage-700 text-cream-50 shadow-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+              <span>In Custody</span>
+            </span>
+          </div>
+
+          <div class="p-6 flex-grow flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="inline-flex items-center gap-1 text-xs font-semibold text-sage-800">
+                  <span>Accessories</span>
+                </span>
+                <span class="text-[11px] font-medium text-earth-400 flex items-center gap-1">
+                  <i class="fa-regular fa-clock text-[10px]"></i>4h ago
+                </span>
+              </div>
+
+              <h3
+                class="text-base sm:text-lg font-bold text-sage-900 group-hover:text-sage-700 transition leading-snug">
+                Matte Olive Hydro Flask (32oz)
+              </h3>
+              <p class="text-xs text-earth-600 mt-2 line-clamp-2 leading-relaxed">
+                Insulated steel water bottle with straw lid and '404 Brain Not Found' sticker on side.
+              </p>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-cream-100 flex items-center justify-between text-xs text-earth-500">
               <span class="flex items-center gap-1.5 truncate">
                 <i class="fa-solid fa-location-dot text-sage-500"></i>
                 <span class="font-medium text-earth-700 truncate">Audi Block Lobby</span>
               </span>
-              <span class="text-[11px] text-earth-400 font-mono">#LC-8915</span>
+              <span
+                class="text-[11px] text-earth-500 font-mono bg-cream-100/80 px-2 py-0.5 rounded-md border border-cream-200/70">#LC-8915</span>
             </div>
           </div>
 
           <div class="p-6 pt-0 flex items-center gap-2">
             <button onclick="openItemDetailsModal(3)"
-              class="flex-1 py-2.5 px-3 rounded-xl border border-cream-300 text-xs font-semibold text-earth-700 hover:bg-cream-100 hover:text-sage-900 transition text-center">
+              class="flex-1 py-2.5 px-3 rounded-xl border border-cream-300/80 text-xs font-semibold text-earth-700 hover:bg-cream-100 hover:text-sage-900 transition text-center">
               View Details
             </button>
             <button onclick="requireAuthAndExecuteClaim(3, 'Matte Olive Hydro Flask (32oz)')"
-              class="flex-1 py-2.5 px-3 rounded-xl bg-sage-600 hover:bg-sage-700 text-cream-50 text-xs font-semibold transition text-center shadow-xs">
+              class="flex-1 py-2.5 px-3 rounded-xl bg-sage-600 hover:bg-sage-700 active:bg-sage-800 text-cream-50 text-xs font-semibold transition text-center shadow-xs hover:shadow-soft">
+              Claim Item
+            </button>
+          </div>
+        </article>
+
+        <!-- CARD 4: Casio Calculator (Archive Expandable) -->
+        <article
+          class="item-card archive-item hidden group bg-white/90 backdrop-blur-md rounded-3xl border border-cream-200/90 hover:border-sage-400/60 hover:bg-white shadow-soft hover:shadow-soft-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+          data-id="4" data-category="academic" data-location="Engineering Lab 204"
+          data-title="Casio fx-991CW Scientific Calculator">
+
+          <div
+            class="h-28 bg-gradient-to-br from-blue-100/40 via-cream-100/50 to-sage-50/70 p-5 flex items-center justify-between border-b border-cream-200/60 relative overflow-hidden">
+            <div
+              class="absolute -right-4 -bottom-4 w-20 h-20 bg-blue-200/30 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500">
+            </div>
+
+            <div
+              class="w-12 h-12 rounded-2xl bg-white/95 backdrop-blur-sm border border-white shadow-xs flex items-center justify-center text-sage-800 text-lg group-hover:scale-110 transition-transform duration-300">
+              <i class="fa-solid fa-calculator"></i>
+            </div>
+
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sage-700 text-cream-50 shadow-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+              <span>With Lab Assistant</span>
+            </span>
+          </div>
+
+          <div class="p-6 flex-grow flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="inline-flex items-center gap-1 text-xs font-semibold text-sage-800">
+                  <span>Books &amp; Academic</span>
+                </span>
+                <span class="text-[11px] font-medium text-earth-400 flex items-center gap-1">
+                  <i class="fa-regular fa-clock text-[10px]"></i>Yesterday
+                </span>
+              </div>
+
+              <h3
+                class="text-base sm:text-lg font-bold text-sage-900 group-hover:text-sage-700 transition leading-snug">
+                Casio fx-991CW Calculator
+              </h3>
+              <p class="text-xs text-earth-600 mt-2 line-clamp-2 leading-relaxed">
+                Standard engineering scientific calculator with protective hard sliding cover. Excellent condition.
+              </p>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-cream-100 flex items-center justify-between text-xs text-earth-500">
+              <span class="flex items-center gap-1.5 truncate">
+                <i class="fa-solid fa-location-dot text-sage-500"></i>
+                <span class="font-medium text-earth-700 truncate">Engineering Lab 204</span>
+              </span>
+              <span
+                class="text-[11px] text-earth-500 font-mono bg-cream-100/80 px-2 py-0.5 rounded-md border border-cream-200/70">#LC-8912</span>
+            </div>
+          </div>
+
+          <div class="p-6 pt-0 flex items-center gap-2">
+            <button onclick="openItemDetailsModal(4)"
+              class="flex-1 py-2.5 px-3 rounded-xl border border-cream-300/80 text-xs font-semibold text-earth-700 hover:bg-cream-100 hover:text-sage-900 transition text-center">
+              View Details
+            </button>
+            <button onclick="requireAuthAndExecuteClaim(4, 'Casio fx-991CW Calculator')"
+              class="flex-1 py-2.5 px-3 rounded-xl bg-sage-600 hover:bg-sage-700 active:bg-sage-800 text-cream-50 text-xs font-semibold transition text-center shadow-xs hover:shadow-soft">
+              Claim Item
+            </button>
+          </div>
+        </article>
+
+        <!-- CARD 5: Hostel Keys (Archive Expandable) -->
+        <article
+          class="item-card archive-item hidden group bg-white/90 backdrop-blur-md rounded-3xl border border-cream-200/90 hover:border-sage-400/60 hover:bg-white shadow-soft hover:shadow-soft-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+          data-id="5" data-category="keys" data-location="Sports Complex" data-title="Hostel Keys with Leather Tag">
+
+          <div
+            class="h-28 bg-gradient-to-br from-amber-100/40 via-cream-100/50 to-orange-50/60 p-5 flex items-center justify-between border-b border-cream-200/60 relative overflow-hidden">
+            <div
+              class="absolute -right-4 -bottom-4 w-20 h-20 bg-orange-200/30 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500">
+            </div>
+
+            <div
+              class="w-12 h-12 rounded-2xl bg-white/95 backdrop-blur-sm border border-white shadow-xs flex items-center justify-center text-sage-800 text-lg group-hover:scale-110 transition-transform duration-300">
+              <i class="fa-solid fa-key"></i>
+            </div>
+
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sage-700 text-cream-50 shadow-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+              <span>Main Security Post</span>
+            </span>
+          </div>
+
+          <div class="p-6 flex-grow flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="inline-flex items-center gap-1 text-xs font-semibold text-sage-800">
+                  <span>Keys &amp; Cards</span>
+                </span>
+                <span class="text-[11px] font-medium text-earth-400 flex items-center gap-1">
+                  <i class="fa-regular fa-clock text-[10px]"></i>Yesterday
+                </span>
+              </div>
+
+              <h3
+                class="text-base sm:text-lg font-bold text-sage-900 group-hover:text-sage-700 transition leading-snug">
+                Hostel Keys with Leather Tag
+              </h3>
+              <p class="text-xs text-earth-600 mt-2 line-clamp-2 leading-relaxed">
+                Ring with 3 door/wardrobe keys and an olive leather fob embossed '#308'. Found at badminton court.
+              </p>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-cream-100 flex items-center justify-between text-xs text-earth-500">
+              <span class="flex items-center gap-1.5 truncate">
+                <i class="fa-solid fa-location-dot text-sage-500"></i>
+                <span class="font-medium text-earth-700 truncate">Sports Complex</span>
+              </span>
+              <span
+                class="text-[11px] text-earth-500 font-mono bg-cream-100/80 px-2 py-0.5 rounded-md border border-cream-200/70">#LC-8908</span>
+            </div>
+          </div>
+
+          <div class="p-6 pt-0 flex items-center gap-2">
+            <button onclick="openItemDetailsModal(5)"
+              class="flex-1 py-2.5 px-3 rounded-xl border border-cream-300/80 text-xs font-semibold text-earth-700 hover:bg-cream-100 hover:text-sage-900 transition text-center">
+              View Details
+            </button>
+            <button onclick="requireAuthAndExecuteClaim(5, 'Hostel Keys with Leather Tag')"
+              class="flex-1 py-2.5 px-3 rounded-xl bg-sage-600 hover:bg-sage-700 active:bg-sage-800 text-cream-50 text-xs font-semibold transition text-center shadow-xs hover:shadow-soft">
+              Claim Item
+            </button>
+          </div>
+        </article>
+
+        <!-- CARD 6: Backpack (Archive Expandable) -->
+        <article
+          class="item-card archive-item hidden group bg-white/90 backdrop-blur-md rounded-3xl border border-cream-200/90 hover:border-sage-400/60 hover:bg-white shadow-soft hover:shadow-soft-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+          data-id="6" data-category="bags" data-location="Central Block" data-title="Charcoal Grey Laptop Backpack">
+
+          <div
+            class="h-28 bg-gradient-to-br from-earth-500/15 via-cream-100/50 to-sage-50/70 p-5 flex items-center justify-between border-b border-cream-200/60 relative overflow-hidden">
+            <div
+              class="absolute -right-4 -bottom-4 w-20 h-20 bg-earth-500/20 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500">
+            </div>
+
+            <div
+              class="w-12 h-12 rounded-2xl bg-white/95 backdrop-blur-sm border border-white shadow-xs flex items-center justify-center text-sage-800 text-lg group-hover:scale-110 transition-transform duration-300">
+              <i class="fa-solid fa-bag-shopping"></i>
+            </div>
+
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sage-700 text-cream-50 shadow-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+              <span>Central Security</span>
+            </span>
+          </div>
+
+          <div class="p-6 flex-grow flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="inline-flex items-center gap-1 text-xs font-semibold text-sage-800">
+                  <span>Bags &amp; Pouches</span>
+                </span>
+                <span class="text-[11px] font-medium text-earth-400 flex items-center gap-1">
+                  <i class="fa-regular fa-clock text-[10px]"></i>2 days ago
+                </span>
+              </div>
+
+              <h3
+                class="text-base sm:text-lg font-bold text-sage-900 group-hover:text-sage-700 transition leading-snug">
+                Charcoal Grey Laptop Backpack
+              </h3>
+              <p class="text-xs text-earth-600 mt-2 line-clamp-2 leading-relaxed">
+                Water-resistant commuter backpack with lecture spiral notebooks and umbrella in side pouch.
+              </p>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-cream-100 flex items-center justify-between text-xs text-earth-500">
+              <span class="flex items-center gap-1.5 truncate">
+                <i class="fa-solid fa-location-dot text-sage-500"></i>
+                <span class="font-medium text-earth-700 truncate">Central Block, 2nd Floor</span>
+              </span>
+              <span
+                class="text-[11px] text-earth-500 font-mono bg-cream-100/80 px-2 py-0.5 rounded-md border border-cream-200/70">#LC-8904</span>
+            </div>
+          </div>
+
+          <div class="p-6 pt-0 flex items-center gap-2">
+            <button onclick="openItemDetailsModal(6)"
+              class="flex-1 py-2.5 px-3 rounded-xl border border-cream-300/80 text-xs font-semibold text-earth-700 hover:bg-cream-100 hover:text-sage-900 transition text-center">
+              View Details
+            </button>
+            <button onclick="requireAuthAndExecuteClaim(6, 'Charcoal Grey Laptop Backpack')"
+              class="flex-1 py-2.5 px-3 rounded-xl bg-sage-600 hover:bg-sage-700 active:bg-sage-800 text-cream-50 text-xs font-semibold transition text-center shadow-xs hover:shadow-soft">
               Claim Item
             </button>
           </div>
@@ -614,7 +925,11 @@
 
           <!-- STEP 1 -->
           <div
-            class="relative bg-white/90 rounded-3xl p-8 border border-cream-300/80 shadow-soft hover:shadow-soft-md transition duration-300 flex flex-col items-center text-center">
+            class="relative bg-white/85 backdrop-blur-md rounded-3xl p-8 border border-earth-800/[0.06] shadow-soft hover:shadow-soft-xl hover:-translate-y-1 transition duration-300 flex flex-col items-center text-center group">
+            <div
+              class="w-14 h-14 rounded-2xl bg-sage-100 text-sage-700 flex items-center justify-center text-xl mb-5 shadow-xs group-hover:scale-110 transition-transform duration-300">
+              <i class="fa-solid fa-camera-retro"></i>
+            </div>
             <span class="text-[11px] font-bold uppercase tracking-wider text-sage-600 mb-2">Step 01</span>
             <h3 class="text-xl font-bold text-sage-900 mb-3">Report in Seconds</h3>
             <p class="text-sm text-earth-600 leading-relaxed font-normal">
@@ -625,10 +940,15 @@
 
           <!-- STEP 2: The AI Highlight -->
           <div
-            class="relative bg-white rounded-3xl p-8 border-2 border-sage-400 shadow-soft-xl transition duration-300 flex flex-col items-center text-center ring-4 ring-sage-100">
+            class="relative bg-white/95 backdrop-blur-md rounded-3xl p-8 border-2 border-sage-500/80 shadow-soft-xl hover:-translate-y-1 transition duration-300 flex flex-col items-center text-center ring-4 ring-sage-100/80 group">
             <div
-              class="absolute -top-3.5 px-3 py-0.5 rounded-full bg-sage-700 text-cream-50 text-[10px] font-bold uppercase tracking-wider">
-              Smart AI Engine
+              class="absolute -top-3.5 px-3.5 py-1 rounded-full bg-sage-700 text-cream-50 text-[10px] font-bold uppercase tracking-wider shadow-xs flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+              <span>Smart AI Engine</span>
+            </div>
+            <div
+              class="w-14 h-14 rounded-2xl bg-sage-700 text-cream-50 flex items-center justify-center text-xl mb-5 shadow-soft group-hover:scale-110 transition-transform duration-300">
+              <i class="fa-solid fa-wand-magic-sparkles text-sage-200"></i>
             </div>
             <span class="text-[11px] font-bold uppercase tracking-wider text-sage-700 mb-2">Step 02</span>
             <h3 class="text-xl font-bold text-sage-900 mb-3">AI Matches It</h3>
@@ -640,12 +960,16 @@
 
           <!-- STEP 3 -->
           <div
-            class="relative bg-white/90 rounded-3xl p-8 border border-cream-300/80 shadow-soft hover:shadow-soft-md transition duration-300 flex flex-col items-center text-center">
+            class="relative bg-white/85 backdrop-blur-md rounded-3xl p-8 border border-earth-800/[0.06] shadow-soft hover:shadow-soft-xl hover:-translate-y-1 transition duration-300 flex flex-col items-center text-center group">
+            <div
+              class="w-14 h-14 rounded-2xl bg-cream-200/80 text-sage-800 flex items-center justify-center text-xl mb-5 shadow-xs group-hover:scale-110 transition-transform duration-300">
+              <i class="fa-solid fa-handshake-simple"></i>
+            </div>
             <span class="text-[11px] font-bold uppercase tracking-wider text-sage-600 mb-2">Step 03</span>
             <h3 class="text-xl font-bold text-sage-900 mb-3">Get Notified &amp; Reunited</h3>
             <p class="text-sm text-earth-600 leading-relaxed font-normal">
               Receive an automated match alert. Verify ownership with simple questions and pick up your belonging
-              safely.
+              safely from Campus Security.
             </p>
           </div>
 
@@ -785,9 +1109,10 @@
               </div>
 
               <div class="flex items-center gap-2 self-end md:self-center">
-                <button onclick="showToast('Searching TF-IDF database for new matches...', 'info')"
-                  class="px-4 py-2 rounded-xl bg-cream-200 hover:bg-cream-300 text-sage-800 text-xs font-semibold transition">
-                  Re-Scan
+                <button onclick="triggerTFIDFReScan()"
+                  class="px-4 py-2 rounded-xl bg-cream-200 hover:bg-cream-300 text-sage-800 text-xs font-semibold transition flex items-center gap-1.5">
+                  <i class="fa-solid fa-arrows-rotate text-[11px]"></i>
+                  <span>Re-Scan</span>
                 </button>
                 <button onclick="showToast('Report options opened', 'info')"
                   class="p-2 text-earth-500 hover:text-earth-700 transition" title="Report Options">
@@ -801,7 +1126,7 @@
           <!-- Bottom Full Dashboard Link -->
           <div class="mt-6 pt-4 border-t border-cream-200 flex items-center justify-between text-xs">
             <span class="text-earth-500">Student Account: <strong
-                class="text-sage-800">tanisha.singha@msam.christuniversity.in</strong></span>
+                class="text-sage-800">test.student@example.com</strong></span>
             <a href="#browse" class="font-bold text-sage-700 hover:text-sage-900 flex items-center gap-1">
               <span>View full dashboard archive</span>
               <i class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -930,11 +1255,11 @@
                 TS
               </div>
               <div>
-                <span class="text-xs font-bold text-sage-900 block">Tanisha Singha</span>
-                <span class="text-[11px] text-earth-500">Student ID #2648548</span>
+                <span class="text-xs font-bold text-sage-900 block">Test Student</span>
+                <span class="text-[11px] text-earth-500">Student ID #2600000</span>
               </div>
             </div>
-            <button onclick="loginUserAsTanisha()"
+            <button onclick="loginUserAsTestStudent()"
               class="px-3.5 py-1.5 rounded-xl bg-sage-600 hover:bg-sage-700 text-cream-50 text-xs font-semibold shadow-xs transition">
               1-Click Login
             </button>
@@ -952,7 +1277,7 @@
           <div>
             <label class="block text-xs font-bold text-sage-800 uppercase tracking-wider mb-1.5">University
               Email</label>
-            <input type="email" id="loginEmailInput" value="tanisha.singha@msam.christuniversity.in" required
+            <input type="email" id="loginEmailInput" value="test.student@example.com" required
               class="w-full px-4 py-3 bg-cream-50 border border-cream-200 rounded-xl text-sm text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500 transition" />
           </div>
           <div>
@@ -1037,7 +1362,7 @@
             <div>
               <label class="block text-xs font-bold text-sage-800 uppercase tracking-wider mb-1.5">Your Contact Email
                 *</label>
-              <input type="email" required id="lostItemContact" value="tanisha.singha@msam.christuniversity.in"
+              <input type="email" required id="lostItemContact" value="test.student@example.com"
                 class="w-full px-4 py-3 bg-cream-50 border border-cream-200 rounded-xl text-sm text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500 transition" />
             </div>
           </div>
@@ -1064,10 +1389,21 @@
                 <p class="text-xs text-earth-600 font-medium">Click or drag image here to attach reference photo</p>
                 <p class="text-[10px] text-earth-400 mt-0.5">PNG, JPG, WebP up to 5MB</p>
               </div>
-              <div id="lostItemPhotoPreview" class="hidden items-center justify-center gap-2 py-1">
-                <i class="fa-solid fa-file-image text-sage-600 text-lg"></i>
-                <span id="lostItemPhotoName" class="text-xs text-sage-800 font-bold truncate max-w-xs">image.png</span>
-                <span class="text-[10px] text-sage-600 bg-sage-100 px-2 py-0.5 rounded-md font-semibold">Attached</span>
+              <div id="lostItemPhotoPreview" class="hidden items-center justify-between gap-3 py-1.5 px-3 bg-cream-50 rounded-xl border border-cream-200">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <img id="lostItemPhotoThumb" class="w-9 h-9 object-cover rounded-lg border border-sage-200 hidden" alt="Preview" />
+                  <i id="lostItemPhotoIcon" class="fa-solid fa-file-image text-sage-600 text-lg"></i>
+                  <div class="text-left min-w-0">
+                    <p id="lostItemPhotoName" class="text-xs text-sage-800 font-bold truncate max-w-[170px] sm:max-w-xs">image.png</p>
+                    <span class="text-[10px] text-sage-600 font-medium">Ready to attach</span>
+                  </div>
+                </div>
+                <button type="button" onclick="removeAttachedPhoto(event, 'lostItemPhotoInput', 'lostItemPhotoPreview', 'lostItemPhotoPlaceholder')"
+                  class="relative z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 text-xs font-semibold transition cursor-pointer"
+                  title="Remove this photo">
+                  <i class="fa-solid fa-trash-can text-[11px]"></i>
+                  <span>Remove</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1179,7 +1515,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-[11px] font-bold text-sage-800 uppercase tracking-wider mb-1">Your Name</label>
-                <input type="text" id="finderName" placeholder="e.g., Tanisha Singha"
+                <input type="text" id="finderName" placeholder="e.g., Test Student"
                   class="w-full px-3.5 py-2.5 bg-white border border-cream-200 rounded-xl text-xs text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500 transition" />
               </div>
               <div>
@@ -1192,17 +1528,44 @@
             <div>
               <label class="block text-[11px] font-bold text-sage-800 uppercase tracking-wider mb-1">University
                 Email</label>
-              <input type="email" id="finderEmail" placeholder="e.g., tanisha.singha@msam.christuniversity.in"
+              <input type="email" id="finderEmail" placeholder="e.g., test.student@example.com"
                 class="w-full px-3.5 py-2.5 bg-white border border-cream-200 rounded-xl text-xs text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500 transition" />
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-sage-800 uppercase tracking-wider mb-1.5">Description &amp;
-              Condition *</label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold text-sage-800 uppercase tracking-wider">Description &amp; Condition
+                *</label>
+              <span
+                class="text-[10px] font-semibold text-sage-700 bg-sage-100 px-2 py-0.5 rounded-full border border-sage-200 flex items-center gap-1">
+                <i class="fa-solid fa-shield-halved text-sage-600"></i>
+                PII Auto-Sanitizer Active
+              </span>
+            </div>
             <textarea rows="3" required id="foundItemDesc"
-              placeholder="Describe the physical condition without revealing sensitive details (e.g. keep passcode private)..."
+              placeholder="Describe physical condition. Note: Student IDs, names, and phone numbers are automatically redacted for privacy..."
               class="w-full px-4 py-3 bg-cream-50 border border-cream-200 rounded-xl text-sm text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500 transition"></textarea>
+          </div>
+
+          <!-- Blind Ownership Challenge Option (Anti-Fraud) -->
+          <div class="p-3.5 rounded-2xl bg-cream-100/70 border border-cream-300/80 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 text-xs font-bold text-sage-900">
+                <i class="fa-solid fa-key text-sage-600"></i>
+                <span>Set Blind Ownership Challenge (Anti-Fraud)</span>
+              </div>
+              <span
+                class="text-[10px] font-semibold text-earth-500 bg-white px-2 py-0.5 rounded-md border border-cream-200">Optional</span>
+            </div>
+            <p class="text-[11px] text-earth-600 leading-tight">
+              Ask a secret question only the rightful owner can answer (e.g. sticker placement, keychain tag).
+            </p>
+            <input type="text" id="foundItemChallengePrompt"
+              placeholder="Question: e.g., What color is the tether strap?"
+              class="w-full px-3.5 py-2 bg-white border border-cream-200 rounded-xl text-xs text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500 transition" />
+            <input type="text" id="foundItemChallengeAnswer" placeholder="Private Answer: e.g., olive green"
+              class="w-full px-3.5 py-2 bg-white border border-cream-200 rounded-xl text-xs text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500 transition" />
           </div>
 
           <!-- Photo Upload Field -->
@@ -1219,10 +1582,21 @@
                 <p class="text-xs text-earth-600 font-medium">Click or drag image here to attach photo</p>
                 <p class="text-[10px] text-earth-400 mt-0.5">PNG, JPG up to 5MB</p>
               </div>
-              <div id="foundItemPhotoPreview" class="hidden items-center justify-center gap-2 py-1">
-                <i class="fa-solid fa-file-image text-sage-600 text-lg"></i>
-                <span id="foundItemPhotoName" class="text-xs text-sage-800 font-bold truncate max-w-xs">image.png</span>
-                <span class="text-[10px] text-sage-600 bg-sage-100 px-2 py-0.5 rounded-md font-semibold">Attached</span>
+              <div id="foundItemPhotoPreview" class="hidden items-center justify-between gap-3 py-1.5 px-3 bg-cream-50 rounded-xl border border-cream-200">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <img id="foundItemPhotoThumb" class="w-9 h-9 object-cover rounded-lg border border-sage-200 hidden" alt="Preview" />
+                  <i id="foundItemPhotoIcon" class="fa-solid fa-file-image text-sage-600 text-lg"></i>
+                  <div class="text-left min-w-0">
+                    <p id="foundItemPhotoName" class="text-xs text-sage-800 font-bold truncate max-w-[170px] sm:max-w-xs">image.png</p>
+                    <span class="text-[10px] text-sage-600 font-medium">Ready to attach</span>
+                  </div>
+                </div>
+                <button type="button" onclick="removeAttachedPhoto(event, 'foundItemPhotoInput', 'foundItemPhotoPreview', 'foundItemPhotoPlaceholder')"
+                  class="relative z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 text-xs font-semibold transition cursor-pointer"
+                  title="Remove this photo">
+                  <i class="fa-solid fa-trash-can text-[11px]"></i>
+                  <span>Remove</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1274,13 +1648,38 @@
           <span class="text-xs font-bold text-sage-900" id="claimModalItemTitle">Apple AirPods Pro</span>
         </div>
 
+        <!-- Interactive Blind Ownership Challenge Section (Loaded dynamically) -->
+        <div id="blindChallengeSection"
+          class="hidden p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/90 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-amber-900">
+              <i class="fa-solid fa-shield-halved text-amber-600"></i>
+              <span>Fast-Pass Blind Challenge (Instant Pre-Approval)</span>
+            </div>
+            <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">Anti-Fraud</span>
+          </div>
+          <p id="blindChallengePromptText" class="text-xs text-amber-900 font-medium">
+            Challenge prompt loading...
+          </p>
+          <div class="flex gap-2">
+            <input type="text" id="blindChallengeAnswerInput" placeholder="Enter private answer to verify instantly..."
+              class="flex-1 px-3 py-2 bg-white border border-amber-300 rounded-xl text-xs text-earth-800 focus:outline-none focus:ring-2 focus:ring-amber-500 transition" />
+            <button type="button" onclick="verifyBlindChallengeDirectly()"
+              class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-cream-50 rounded-xl text-xs font-semibold shadow-xs transition">
+              Verify
+            </button>
+          </div>
+          <p id="blindChallengeErrorMsg" class="hidden text-xs font-semibold text-amber-800 bg-amber-100/90 py-1.5 px-3 rounded-xl border border-amber-300"></p>
+          <p class="text-[10px] text-amber-700">Correct answers skip manual queue and issue an immediate Room 104 Fast-Pass.</p>
+        </div>
+
         <!-- Form -->
         <form onsubmit="handleClaimSubmit(event)" class="mt-4 space-y-4">
 
           <div>
             <label class="block text-xs font-bold text-sage-800 uppercase tracking-wider mb-1.5">Your Full Name
               *</label>
-            <input type="text" required id="claimantName" value="Tanisha Singha"
+            <input type="text" required id="claimantName" value="Test Student"
               class="w-full px-4 py-3 bg-cream-50 border border-cream-200 rounded-xl text-sm text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500 transition" />
           </div>
 
@@ -1288,7 +1687,7 @@
             <div>
               <label class="block text-xs font-bold text-sage-800 uppercase tracking-wider mb-1.5">Student/Staff ID
                 *</label>
-              <input type="text" required id="claimantId" value="2341098"
+              <input type="text" required id="claimantId" value="2600000"
                 class="w-full px-4 py-3 bg-cream-50 border border-cream-200 rounded-xl text-sm text-earth-800 focus:outline-none focus:ring-2 focus:ring-sage-500 transition" />
             </div>
             <div>
@@ -1308,9 +1707,9 @@
           </div>
 
           <div class="p-3 bg-cream-50 border border-cream-200 rounded-xl text-xs text-earth-600 flex items-start gap-2">
-            <i class="fa-solid fa-circle-info text-sage-600 mt-0.5"></i>
-            <span>Once submitted, our security desk will cross-check your claim and send an OTP/Email to authorize
-              handover.</span>
+            <i class="fa-solid fa-qrcode text-sage-600 mt-0.5"></i>
+            <span><strong>Offline Resilient:</strong> Upon submission, you will receive an Offline Claim Pass code. Save
+              a screenshot to collect your item at Room 104 without needing campus cellular reception.</span>
           </div>
 
           <div class="flex items-center justify-end gap-3 pt-3 border-t border-cream-200">
@@ -1382,384 +1781,9 @@
 
 
   <!-- ========================================================================= -->
-  <!-- JAVASCRIPT LOGIC (Interactive Filtering, Modals, Auth Workflow)           -->
+  <!-- JAVASCRIPT APPLICATION LOGIC & API INTEGRATION (EXTERNAL MODULE)          -->
   <!-- ========================================================================= -->
-  <script>
-    // State management: starts as guest
-    let isLoggedIn = false;
-    let isExpandedAll = false;
-    let pendingModalAfterAuth = null;
-    let pendingClaimData = null;
-
-    // Sample data for details modal
-    const itemsData = {
-      1: {
-        title: "Apple AirPods Pro (2nd Gen)",
-        category: "Electronics",
-        location: "Central Library (3rd Floor Quiet Study Cubicle #34)",
-        date: "Today, 10:15 AM",
-        status: "In Custody at Central Security Desk",
-        // image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=600&q=80",
-        description: "Found tucked next to charging socket on 6th floor, Central Block, near round tables. The AirPods are enclosed in a white MagSafe case with a thin olive green silicone tether. Serial number recorded securely by security officer."
-      },
-      2: {
-        title: "Christ University Student ID Card",
-        category: "IDs & Documents",
-        location: "Block IV Cafeteria (Table 12 near salad bar)",
-        date: "Today, 12:45 PM",
-        status: "At Block IV Reception Desk",
-        // image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=80",
-        description: "Official smart student ID card issued for the School of Arts & Humanities. Found lying on table 12 after lunch hours. Safe at reception desk for immediate identification."
-      },
-      3: {
-        title: "Matte Olive Hydro Flask (32oz)",
-        category: "Personal Accessories",
-        location: "Audi Block Ground Floor Lobby",
-        date: "Today, 09:30 AM",
-        status: "In Custody at Audi Desk",
-        // image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80",
-        description: "Olive green thermal hydration flask with black loop handle and straw mouth. Features a small holographic coding sticker and minor scrape on the bottom base."
-      },
-      4: {
-        title: "Casio fx-991CW Scientific Calculator",
-        category: "Academic & Books",
-        location: "Engineering Lab 204",
-        date: "Yesterday, 04:30 PM",
-        status: "In Custody with Lab Assistant",
-        image: "https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=600&q=80",
-        description: "Standard engineering non-programmable scientific calculator. Has protective hard sliding cover. Clean condition with fresh battery."
-      },
-      5: {
-        title: "Hostel Keys with Leather Tag",
-        category: "Keys & Access",
-        location: "Sports Complex (Court B Bleachers)",
-        date: "Yesterday, 06:15 PM",
-        status: "In Custody at Security Main Post",
-        image: "https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=600&q=80",
-        description: "Ring with 3 brass door/wardrobe keys and an olive leather rectangular fob embossed with '#308'. Found after evening badminton practice."
-      },
-      6: {
-        title: "Charcoal Grey Laptop Backpack",
-        category: "Bags & Pouches",
-        location: "Central Block (2nd Floor Staircase)",
-        date: "2 days ago, 02:00 PM",
-        status: "In Custody at Central Security Desk",
-        image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80",
-        description: "Durable water-resistant backpack containing university lecture spiral notebooks, pens, and an umbrella in the side pocket. No identity card found inside."
-      }
-    };
-
-    // Modal Control Functions
-    function openModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-      }
-    }
-
-    function closeModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-      }
-    }
-
-    // Natural Authenticated Action Guard
-    function requireAuthAndExecute(targetModalId) {
-      if (isLoggedIn) {
-        openModal(targetModalId);
-      } else {
-        pendingModalAfterAuth = targetModalId;
-        showToast('Please sign in with your campus credentials to continue.', 'info');
-        openModal('authModal');
-      }
-    }
-
-    function requireAuthAndExecuteClaim(id, title) {
-      if (isLoggedIn) {
-        openClaimModal(id, title);
-      } else {
-        pendingClaimData = { id, title };
-        showToast('Please log in with your Student ID to submit a claim.', 'info');
-        openModal('authModal');
-      }
-    }
-
-    // Item Details Modal
-    function openItemDetailsModal(id) {
-      const item = itemsData[id];
-      if (!item) return;
-
-      document.getElementById('detailItemCategoryBadge').textContent = item.category;
-      document.getElementById('detailItemId').textContent = '#LC-89' + id;
-      if (document.getElementById('detailItemImage')) {
-        document.getElementById('detailItemImage').src = item.image || '';
-      }
-      document.getElementById('detailItemTitle').textContent = item.title;
-      document.getElementById('detailItemLocation').textContent = item.location;
-      document.getElementById('detailItemDate').textContent = item.date;
-      document.getElementById('detailItemStatus').textContent = item.status;
-      document.getElementById('detailItemDescription').textContent = item.description;
-
-      const claimBtn = document.getElementById('detailClaimBtn');
-      claimBtn.onclick = function () {
-        closeModal('itemDetailsModal');
-        requireAuthAndExecuteClaim(id, item.title);
-      };
-
-      openModal('itemDetailsModal');
-    }
-
-    // Open Claim Modal with dynamic title
-    function openClaimModal(id, title) {
-      document.getElementById('claimModalItemTitle').textContent = title + ' (#LC-89' + id + ')';
-      openModal('claimModal');
-    }
-
-    // Toast feedback notification
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toastMessage');
-      const toastIcon = document.getElementById('toastIcon');
-
-      toastMsg.textContent = message;
-      if (type === 'success') {
-        toastIcon.className = 'fa-solid fa-circle-check text-sage-300 text-lg';
-      } else if (type === 'info') {
-        toastIcon.className = 'fa-solid fa-circle-info text-sage-300 text-lg';
-      } else {
-        toastIcon.className = 'fa-solid fa-triangle-exclamation text-amber-300 text-lg';
-      }
-
-      toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
-      toast.classList.add('translate-y-0', 'opacity-100');
-
-      setTimeout(() => {
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
-      }, 3500);
-    }
-
-    // Authentication Handlers
-    function loginUserAsTanisha() {
-      closeModal('authModal');
-      isLoggedIn = true;
-      updateAuthUI();
-      showToast('Signed in as Tanisha Singha (Student ID: #2648548)', 'success');
-
-      // Execute pending action if user clicked report or claim before logging in
-      if (pendingModalAfterAuth) {
-        const modal = pendingModalAfterAuth;
-        pendingModalAfterAuth = null;
-        setTimeout(() => openModal(modal), 200);
-      } else if (pendingClaimData) {
-        const claim = pendingClaimData;
-        pendingClaimData = null;
-        setTimeout(() => openClaimModal(claim.id, claim.title), 200);
-      }
-    }
-
-    function handleManualLogin(e) {
-      e.preventDefault();
-      loginUserAsTanisha();
-    }
-
-    function logoutUser() {
-      isLoggedIn = false;
-      pendingModalAfterAuth = null;
-      pendingClaimData = null;
-      updateAuthUI();
-      showToast('Logged out of LostConnect', 'info');
-    }
-
-    function updateAuthUI() {
-      const loggedOutNav = document.getElementById('loggedOutNav');
-      const loggedInNav = document.getElementById('loggedInNav');
-      const reportsGuestView = document.getElementById('reportsGuestView');
-      const reportsLoggedInView = document.getElementById('reportsLoggedInView');
-      const statusIndicatorBadge = document.getElementById('statusIndicatorBadge');
-      const navReportsBadge = document.getElementById('navReportsBadge');
-      const mobileAuthGuest = document.getElementById('mobileAuthGuest');
-      const mobileAuthStudent = document.getElementById('mobileAuthStudent');
-
-      if (isLoggedIn) {
-        loggedOutNav.classList.add('hidden');
-        loggedInNav.classList.remove('hidden');
-        loggedInNav.classList.add('flex');
-
-        mobileAuthGuest.classList.add('hidden');
-        mobileAuthStudent.classList.remove('hidden');
-        mobileAuthStudent.classList.add('flex');
-
-        reportsGuestView.classList.add('hidden');
-        reportsLoggedInView.classList.remove('hidden');
-
-        statusIndicatorBadge.className = 'px-3 py-1 rounded-full font-bold bg-sage-100 text-sage-800 border border-sage-200';
-        statusIndicatorBadge.textContent = 'Signed in: Tanisha Singha';
-
-        navReportsBadge.classList.remove('hidden');
-      } else {
-        loggedOutNav.classList.remove('hidden');
-        loggedInNav.classList.add('hidden');
-        loggedInNav.classList.remove('flex');
-
-        mobileAuthGuest.classList.remove('hidden');
-        mobileAuthStudent.classList.add('hidden');
-        mobileAuthStudent.classList.remove('flex');
-
-        reportsGuestView.classList.remove('hidden');
-        reportsLoggedInView.classList.add('hidden');
-
-        statusIndicatorBadge.className = 'px-3 py-1 rounded-full font-bold bg-cream-200 text-earth-700';
-        statusIndicatorBadge.textContent = 'Guest (Not Signed In)';
-
-        navReportsBadge.classList.add('hidden');
-      }
-    }
-
-    // Form handlers
-    function handleReportLostSubmit(e) {
-      e.preventDefault();
-      const title = document.getElementById('lostItemTitle').value;
-      closeModal('reportLostModal');
-      e.target.reset();
-      showToast(`Lost report for "${title}" posted! TF-IDF similarity scanning initiated.`, 'success');
-      document.getElementById('navReportsBadge').textContent = '3';
-    }
-
-    function handleReportFoundSubmit(e) {
-      e.preventDefault();
-      const title = document.getElementById('foundItemTitle').value;
-      closeModal('reportFoundModal');
-      e.target.reset();
-      showToast(`Thank you! "${title}" recorded. Deposited record forwarded to Campus Security.`, 'success');
-    }
-
-    function handleClaimSubmit(e) {
-      e.preventDefault();
-      const name = document.getElementById('claimantName').value;
-      closeModal('claimModal');
-      e.target.reset();
-      showToast(`Claim received for ${name}. Verification code sent to your registered contact!`, 'success');
-    }
-
-    // Search & Filter Logic
-    function handleSearchFilter() {
-      const query = document.getElementById('liveSearchInput').value.toLowerCase().trim();
-      const selectedCategory = document.getElementById('categoryFilterSelect').value;
-      const selectedLocation = document.getElementById('locationFilterSelect').value;
-      const clearBtn = document.getElementById('clearSearchBtn');
-      const cards = document.querySelectorAll('.item-card');
-      const noItemsState = document.getElementById('noItemsState');
-      const counter = document.getElementById('itemsCounter');
-
-      if (query.length > 0) {
-        clearBtn.classList.remove('hidden');
-      } else {
-        clearBtn.classList.add('hidden');
-      }
-
-      let visibleCount = 0;
-
-      cards.forEach(card => {
-        const title = card.getAttribute('data-title').toLowerCase();
-        const category = card.getAttribute('data-category');
-        const location = card.getAttribute('data-location');
-        const cardText = card.innerText.toLowerCase();
-
-        const matchesQuery = query === '' || title.includes(query) || cardText.includes(query);
-        const matchesCategory = selectedCategory === 'all' || category === selectedCategory;
-        const matchesLocation = selectedLocation === 'all' || location.includes(selectedLocation);
-
-        if (matchesQuery && matchesCategory && matchesLocation) {
-          card.classList.remove('hidden');
-          visibleCount++;
-        } else {
-          card.classList.add('hidden');
-        }
-      });
-
-      counter.textContent = `Showing ${visibleCount} item${visibleCount === 1 ? '' : 's'}`;
-
-      if (visibleCount === 0) {
-        noItemsState.classList.remove('hidden');
-      } else {
-        noItemsState.classList.add('hidden');
-      }
-    }
-
-    function clearSearch() {
-      document.getElementById('liveSearchInput').value = '';
-      handleSearchFilter();
-    }
-
-    function setCategoryPill(category) {
-      document.getElementById('categoryFilterSelect').value = category;
-
-      // Update active styling on pills
-      document.querySelectorAll('.category-pill').forEach(pill => {
-        if (pill.getAttribute('data-cat') === category) {
-          pill.className = 'category-pill active-pill px-3 py-1.5 rounded-xl font-semibold transition whitespace-nowrap bg-sage-600 text-cream-50';
-        } else {
-          pill.className = 'category-pill px-3 py-1.5 rounded-xl font-medium transition whitespace-nowrap bg-cream-100 text-earth-700 hover:bg-sage-100';
-        }
-      });
-
-      handleSearchFilter();
-    }
-
-    function toggleExpandAllItems() {
-      isExpandedAll = !isExpandedAll;
-      const text = document.getElementById('expandBtnText');
-      const icon = document.getElementById('expandBtnIcon');
-
-      if (isExpandedAll) {
-        text.textContent = 'Showing All Archive (3)';
-        icon.className = 'fa-solid fa-check text-[10px] text-sage-600';
-        showToast('All items currently verified in campus custody are displayed below.', 'info');
-      } else {
-        text.textContent = 'View All in Custody';
-        icon.className = 'fa-solid fa-arrow-right text-[10px]';
-      }
-    }
-
-    // Mobile Navigation Drawer Toggle
-    function toggleMobileMenu() {
-      const menu = document.getElementById('mobileMenu');
-      const icon = document.getElementById('mobileMenuIcon');
-      if (menu.classList.contains('hidden')) {
-        menu.classList.remove('hidden');
-        icon.className = 'fa-solid fa-xmark text-lg';
-      } else {
-        menu.classList.add('hidden');
-        icon.className = 'fa-solid fa-bars text-lg';
-      }
-    }
-
-    // Close modals on Escape key or outside click
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeModal('authModal');
-        closeModal('reportLostModal');
-        closeModal('reportFoundModal');
-        closeModal('claimModal');
-        closeModal('itemDetailsModal');
-      }
-    });
-
-    ['authModal', 'reportLostModal', 'reportFoundModal', 'claimModal', 'itemDetailsModal'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.addEventListener('click', (e) => {
-          if (e.target === el || e.target.classList.contains('modal-backdrop-wrapper')) {
-            closeModal(id);
-          }
-        });
-      }
-    });
-  </script>
+  <script src="js/app.js"></script>
 
 </body>
 
