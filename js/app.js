@@ -811,3 +811,25 @@ if (document.readyState === 'loading') {
   initDragAndDrop();
 }
 
+
+// Expose functions for legacy HTML inline onclick handlers
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.requireAuthAndExecute = requireAuthAndExecute;
+window.requireAuthAndExecuteClaim = requireAuthAndExecuteClaim;
+
+window.showToast = showToast;
+window.clearSearch = clearSearch;
+window.logoutUser = logoutUser;
+window.loginUserAsTestStudent = loginUserAsTestStudent;
+
+window.openClaimModal = openClaimModal;
+window.openItemDetailsModal = openItemDetailsModal;
+window.removeAttachedPhoto = removeAttachedPhoto;
+
+window.setCategoryPill = setCategoryPill;
+window.toggleExpandAllItems = toggleExpandAllItems;
+window.toggleMobileMenu = toggleMobileMenu;
+
+window.verifyBlindChallengeDirectly = verifyBlindChallengeDirectly;
+window.triggerTFIDFReScan = triggerTFIDFReScan;

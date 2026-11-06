@@ -59,7 +59,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve frontend static assets
+// Serve the React build when available, while retaining static legacy assets.
+const buildDir = path.join(__dirname, 'dist');
+app.use(express.static(buildDir));
 app.use(express.static(__dirname));
 
 // Fallback to index.html for non-API routes
@@ -67,7 +69,7 @@ app.use((req, res, next) => {
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: `API route ${req.method} ${req.path} not found` });
   }
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(fs.existsSync(path.join(buildDir, 'index.html')) ? buildDir : __dirname, 'index.html'));
 });
 
 // Global Error Handler

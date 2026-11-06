@@ -4,15 +4,22 @@
   "description": "LostConnect - Campus Lost & Found Portal",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "concurrently -k \"node server.js\" \"vite\"",
+    "build": "vite build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@vitejs/plugin-react": "^6.2.1",
+    "concurrently": "^10.0.6",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "multer": "^2.4.0",
-    "nodemailer": "^10.0.10"
+    "nodemailer": "^10.0.10",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "vite": "^8.3.6"
   }
 }
