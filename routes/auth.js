@@ -8,7 +8,7 @@ const router = express.Router();
 const db = require('../services/db');
 
 // POST /api/auth/login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   if (!email) {
@@ -16,13 +16,13 @@ router.post('/login', (req, res) => {
   }
 
   // Pre-seeded or existing user lookup
-  let user = db.getUserByEmail(email);
+  let user = await db.getUserByEmail(email);
 
   if (!user) {
     // If not in database, create a campus student profile
     const studentMatch = email.match(/^([a-z.]+)(?:\d*)@/i);
     const inferredName = studentMatch ? studentMatch[1].replace('.', ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Campus Student';
-    user = db.createUser({
+    user = await db.createUser({
       name: inferredName,
       email,
       studentId: '2' + Math.floor(100000 + Math.random() * 900000),
@@ -50,19 +50,19 @@ router.post('/login', (req, res) => {
 });
 
 // POST /api/auth/register
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   const { name, email, studentId, department } = req.body;
 
   if (!name || !email) {
     return res.status(400).json({ error: 'Name and university email are required' });
   }
 
-  const existing = db.getUserByEmail(email);
+  const existing = await db.getUserByEmail(email);
   if (existing) {
     return res.status(409).json({ error: 'Account already registered with this email' });
   }
 
-  const user = db.createUser({
+  const user = await db.createUser({
     name,
     email,
     studentId: studentId || '2600000',
@@ -81,24 +81,31 @@ router.post('/register', (req, res) => {
 });
 
 // GET /api/auth/me
-router.get('/me', (req, res) => {
+router.get('/me', async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     // Default to guest state
     return res.json({ authenticated: false, user: null });
   }
 
+  let payload;
   try {
     const rawToken = authHeader.split(' ')[1];
-    const payload = JSON.parse(Buffer.from(rawToken, 'base64').toString('utf8'));
-    const user = db.getUserByEmail(payload.email);
-    if (!user) {
-      return res.json({ authenticated: false, user: null });
-    }
-    res.json({ authenticated: true, user });
+    payload = JSON.parse(Buffer.from(rawToken, 'base64').toString('utf8'));
   } catch (err) {
     res.json({ authenticated: false, user: null });
+    return;
   }
+
+  if (!payload || typeof payload.email !== 'string') {
+    return res.json({ authenticated: false, user: null });
+  }
+
+  const user = await db.getUserByEmail(payload.email);
+  if (!user) {
+    return res.json({ authenticated: false, user: null });
+  }
+  res.json({ authenticated: true, user });
 });
 
 // POST /api/auth/logout

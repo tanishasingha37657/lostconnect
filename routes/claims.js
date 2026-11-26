@@ -16,19 +16,19 @@ function normalizeAnswer(text) {
 }
 
 // POST /api/claims (Submit Claim & Generate Offline Claim Pass)
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { foundItemId, claimantName, studentId, phone, proofDetails } = req.body;
 
   if (!foundItemId || !claimantName || !proofDetails) {
     return res.status(400).json({ error: 'foundItemId, claimantName, and proofDetails are required' });
   }
 
-  const foundItem = db.getFoundItemById(foundItemId);
+  const foundItem = await db.getFoundItemById(foundItemId);
   if (!foundItem) {
     return res.status(404).json({ error: 'Found item not found' });
   }
 
-  const newClaim = db.createClaim({
+  const newClaim = await db.createClaim({
     foundItemId,
     foundItemTitle: foundItem.title,
     custodyLocation: foundItem.custodyLocation,
@@ -54,21 +54,21 @@ router.post('/', (req, res) => {
 });
 
 // POST /api/claims/challenge/verify (Blind Ownership Challenge API)
-router.post('/challenge/verify', (req, res) => {
+router.post('/challenge/verify', async (req, res) => {
   const { foundItemId, claimantAnswer, claimantStudentId, claimantName } = req.body;
 
   if (!foundItemId || !claimantAnswer) {
     return res.status(400).json({ error: 'foundItemId and claimantAnswer are required' });
   }
 
-  const challenge = db.getChallengeByItemId(foundItemId);
+  const challenge = await db.getChallengeByItemId(foundItemId);
   if (!challenge) {
     return res.status(404).json({
       error: 'No blind challenge question registered for this item. Proceed with standard claim.'
     });
   }
 
-  const item = db.getFoundItemById(foundItemId);
+  const item = await db.getFoundItemById(foundItemId);
   const normalizedAttempt = normalizeAnswer(claimantAnswer);
   const normalizedTarget = normalizeAnswer(challenge.answerNormalized);
 
@@ -79,7 +79,7 @@ router.post('/challenge/verify', (req, res) => {
 
   if (isMatch) {
     // Automatically generate a pre-approved fast-pass claim
-    const fastClaim = db.createClaim({
+    const fastClaim = await db.createClaim({
       foundItemId,
       foundItemTitle: item ? item.title : 'Campus Belonging',
       custodyLocation: item ? item.custodyLocation : 'Central Security Desk',
@@ -112,13 +112,13 @@ router.post('/challenge/verify', (req, res) => {
 });
 
 // GET /api/claims/:id/pass (Fetch Claim Pass details)
-router.get('/:id/pass', (req, res) => {
-  const claim = db.getClaimById(req.params.id);
+router.get('/:id/pass', async (req, res) => {
+  const claim = await db.getClaimById(req.params.id);
   if (!claim) {
     return res.status(404).json({ error: 'Claim pass not found' });
   }
 
-  const item = db.getFoundItemById(claim.foundItemId);
+  const item = await db.getFoundItemById(claim.foundItemId);
 
   res.json({
     success: true,
@@ -139,9 +139,9 @@ router.get('/:id/pass', (req, res) => {
 });
 
 // GET /api/claims/my-claims
-router.get('/my-claims', (req, res) => {
+router.get('/my-claims', async (req, res) => {
   const studentId = req.query.studentId || '2600000';
-  const claims = db.getClaimsByStudentId(studentId);
+  const claims = await db.getClaimsByStudentId(studentId);
 
   res.json({
     success: true,

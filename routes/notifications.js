@@ -31,8 +31,10 @@ router.post('/dispatch-match', async (req, res) => {
     return res.status(400).json({ error: 'lostItemId and foundItemId are required' });
   }
 
-  const lostItem = db.getLostItemById(lostItemId);
-  const foundItem = db.getFoundItemById(foundItemId);
+  const [lostItem, foundItem] = await Promise.all([
+    db.getLostItemById(lostItemId),
+    db.getFoundItemById(foundItemId)
+  ]);
 
   if (!lostItem || !foundItem) {
     return res.status(404).json({ error: 'Lost item or Found item not found' });

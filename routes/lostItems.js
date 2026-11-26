@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Title, category, location, and description are required' });
   }
 
-  const newLost = db.createLostItem({
+  const newLost = await db.createLostItem({
     title,
     category,
     approxLocation,
@@ -39,7 +39,7 @@ router.post('/', async (req, res) => {
   });
 
   // Run in-process TF-IDF vector similarity immediately against existing found items
-  const activeFoundItems = db.getAllFoundItems().filter(i => i.status !== 'returned');
+  const activeFoundItems = (await db.getAllFoundItems()).filter(i => i.status !== 'returned');
   const candidateMatches = findMatches(newLost, activeFoundItems);
 
   let emailDispatched = false;
@@ -79,11 +79,11 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/lost-items/my-reports
-router.get('/my-reports', (req, res) => {
+router.get('/my-reports', async (req, res) => {
   // Support studentId from query or header, fallback to default student Test Student
   const studentId = req.query.studentId || '2600000';
-  const reports = db.getLostItemsByStudentId(studentId);
-  const activeFoundItems = db.getAllFoundItems().filter(i => i.status !== 'returned');
+  const reports = await db.getLostItemsByStudentId(studentId);
+  const activeFoundItems = (await db.getAllFoundItems()).filter(i => i.status !== 'returned');
 
   // Enrich each report with current TF-IDF match calculations
   const enrichedReports = reports.map(rep => {
@@ -105,13 +105,13 @@ router.get('/my-reports', (req, res) => {
 });
 
 // GET /api/lost-items/:id
-router.get('/:id', (req, res) => {
-  const report = db.getLostItemById(req.params.id);
+router.get('/:id', async (req, res) => {
+  const report = await db.getLostItemById(req.params.id);
   if (!report) {
     return res.status(404).json({ error: 'Lost report not found' });
   }
 
-  const activeFoundItems = db.getAllFoundItems().filter(i => i.status !== 'returned');
+  const activeFoundItems = (await db.getAllFoundItems()).filter(i => i.status !== 'returned');
   const matches = findMatches(report, activeFoundItems);
 
   res.json({
@@ -124,13 +124,13 @@ router.get('/:id', (req, res) => {
 });
 
 // PATCH /api/lost-items/:id/status
-router.patch('/:id/status', (req, res) => {
+router.patch('/:id/status', async (req, res) => {
   const { status } = req.body;
   if (!status) {
     return res.status(400).json({ error: 'Status is required' });
   }
 
-  const updated = db.updateLostItemStatus(req.params.id, status);
+  const updated = await db.updateLostItemStatus(req.params.id, status);
   if (!updated) {
     return res.status(404).json({ error: 'Lost report not found' });
   }

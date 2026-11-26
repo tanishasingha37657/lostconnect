@@ -26,7 +26,7 @@ yarn-error.log*
 Thumbs.db
 ehthumbs.db
 Desktop.ini
-# Runtime database (recreated from seed data on startup)
+# Legacy local JSON state (the application now uses MongoDB)
 data/lostconnect_db.json
 
 # Editor settings

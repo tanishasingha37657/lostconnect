@@ -4,6 +4,8 @@
  * Full Stack REST API & Static Application Server
  */
 
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -55,14 +57,14 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     portal: 'LostConnect - Christ University',
     timestamp: new Date().toISOString(),
+    database: 'MongoDB',
     engine: 'Node.js In-Process TF-IDF Similarity + Weak-Signal Offline Passes'
   });
 });
 
-// Serve the React build when available, while retaining static legacy assets.
+// Serve the React build when available.
 const buildDir = path.join(__dirname, 'dist');
 app.use(express.static(buildDir));
-app.use(express.static(__dirname));
 
 // Fallback to index.html for non-API routes
 app.use((req, res, next) => {
@@ -78,14 +80,22 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message || 'Internal Server Error' });
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`  LostConnect Full-Stack Server is running!`);
-  console.log(`  Portal URL:       http://localhost:${PORT}/`);
-  console.log(`  API Health:       http://localhost:${PORT}/api/health`);
-  console.log(`  TF-IDF Matcher:   Active (In-process Node.js)`);
-  console.log(`  Offline Pass:     Ready (Weak-Campus-Signal Compliant)`);
-  console.log(`  Security Desk:    Central Block Room 104`);
-  console.log(`====================================================`);
-});
+// Connect and seed before accepting requests so API handlers never run without a database.
+require('./services/db').connect()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`====================================================`);
+      console.log(`  LostConnect Full-Stack Server is running!`);
+      console.log(`  Portal URL:       http://localhost:${PORT}/`);
+      console.log(`  API Health:       http://localhost:${PORT}/api/health`);
+      console.log(`  MongoDB:          Connected`);
+      console.log(`  TF-IDF Matcher:   Active (In-process Node.js)`);
+      console.log(`  Offline Pass:     Ready (Weak-Campus-Signal Compliant)`);
+      console.log(`  Security Desk:    Central Block Room 104`);
+      console.log(`====================================================`);
+    });
+  })
+  .catch(error => {
+    console.error('Unable to connect to MongoDB:', error.message);
+    process.exitCode = 1;
+  });

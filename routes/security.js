@@ -9,7 +9,7 @@ const router = express.Router();
 const db = require('../services/db');
 
 // GET /api/security/claims/lookup?query=...
-router.get('/claims/lookup', (req, res) => {
+router.get('/claims/lookup', async (req, res) => {
   const { query } = req.query;
 
   if (!query || query.trim() === '') {
@@ -17,7 +17,7 @@ router.get('/claims/lookup', (req, res) => {
   }
 
   const q = query.trim().toUpperCase();
-  const allClaims = db.getAllClaims();
+  const allClaims = await db.getAllClaims();
 
   // Search by exact claim code (e.g. LC-CLAIM-8921), student ID (e.g. 2600000), or item ID
   const matches = allClaims.filter(c =>
@@ -35,8 +35,8 @@ router.get('/claims/lookup', (req, res) => {
   }
 
   // Enrich with item details
-  const enriched = matches.map(claim => {
-    const item = db.getFoundItemById(claim.foundItemId);
+  const enriched = await Promise.all(matches.map(async claim => {
+    const item = await db.getFoundItemById(claim.foundItemId);
     return {
       claimId: claim.id,
       claimCode: claim.claimCode,
@@ -58,7 +58,7 @@ router.get('/claims/lookup', (req, res) => {
       } : null,
       createdAt: claim.createdAt
     };
-  });
+  }));
 
   res.json({
     found: true,
@@ -68,7 +68,7 @@ router.get('/claims/lookup', (req, res) => {
 });
 
 // PATCH /api/security/claims/:id/handover
-router.patch('/claims/:id/handover', (req, res) => {
+router.patch('/claims/:id/handover', async (req, res) => {
   const { officerNotes, officerBadge, physicalIdVerified } = req.body;
 
   if (!physicalIdVerified) {
@@ -77,7 +77,7 @@ router.patch('/claims/:id/handover', (req, res) => {
     });
   }
 
-  const claim = db.updateClaimHandover(
+  const claim = await db.updateClaimHandover(
     req.params.id,
     officerNotes || 'Physical Christ University Student ID checked and item handed over.',
     officerBadge || 'SEC-ROOM104'
@@ -95,10 +95,12 @@ router.patch('/claims/:id/handover', (req, res) => {
 });
 
 // GET /api/security/stats
-router.get('/stats', (req, res) => {
-  const foundItems = db.getAllFoundItems();
-  const lostItems = db.getAllLostItems();
-  const claims = db.getAllClaims();
+router.get('/stats', async (req, res) => {
+  const [foundItems, lostItems, claims] = await Promise.all([
+    db.getAllFoundItems(),
+    db.getAllLostItems(),
+    db.getAllClaims()
+  ]);
 
   const inCustody = foundItems.filter(i => i.status === 'in_custody' || i.status === 'at_reception').length;
   const reunited = foundItems.filter(i => i.status === 'returned').length + lostItems.filter(i => i.status === 'resolved').length;

@@ -1,292 +1,139 @@
-/**
- * services/db.js
- * In-Memory & File-Backed JSON Datastore for LostConnect
- * Pre-seeded with Christ University campus data and items.
- */
-
 const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose');
+const { User, FoundItem, LostItem, Challenge, Claim } = require('./models');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
-const DB_FILE = path.join(DATA_DIR, 'lostconnect_db.json');
+const seedPath = path.join(__dirname, '..', 'data', 'seed.json');
 
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+function serialize(record) {
+  if (!record) return null;
+  const { _id, __v, ...fields } = record;
+  return { ...fields, id: String(_id) };
 }
 
-// Initial seed data aligned with index.html
-const INITIAL_SEED = {
-  users: [
-    {
-      id: 'usr_1',
-      name: 'Test Student',
-      email: 'test.student@example.com',
-      studentId: '2600000',
-      role: 'student',
-      department: 'School of Sciences (MSAIM)'
-    },
-    {
-      id: 'usr_sec',
-      name: 'Central Security Officer',
-      email: 'security.desk@christuniversity.in',
-      badgeId: 'SEC-ROOM104',
-      role: 'security',
-      department: 'Campus Safety & Custody'
-    }
-  ],
-  foundItems: [
-    {
-      id: '1',
-      itemCode: 'LC-8921',
-      title: 'Apple AirPods Pro (2nd Gen)',
-      category: 'electronics',
-      location: 'Central Library (3rd Floor Quiet Study Cubicle #34)',
-      custodyLocation: 'Central Security Desk (Room 104)',
-      status: 'in_custody',
-      date: 'Today, 10:15 AM',
-      description: 'Found tucked next to charging socket on 6th floor, Central Block, near round tables. The AirPods are enclosed in a white MagSafe case with a thin olive green silicone tether. Serial number recorded securely by security officer.',
-      sanitized: true,
-      hasChallenge: true,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: '2',
-      itemCode: 'LC-8919',
-      title: 'Christ University Student ID Card',
-      category: 'documents',
-      location: 'Block IV Cafeteria (Table 12 near salad bar)',
-      custodyLocation: 'Block IV Reception Desk',
-      status: 'at_reception',
-      date: 'Today, 12:45 PM',
-      description: "Official smart student ID card issued for the School of Arts & Humanities. Found lying on table 12 after lunch hours. Initials: 'R. K.', Department of Psychology, year 2024-2027.",
-      sanitized: true,
-      hasChallenge: false,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: '3',
-      itemCode: 'LC-8915',
-      title: 'Matte Olive Hydro Flask (32oz)',
-      category: 'accessories',
-      location: 'Audi Block Ground Floor Lobby',
-      custodyLocation: 'Audi Desk',
-      status: 'in_custody',
-      date: 'Today, 09:30 AM',
-      description: 'Olive green thermal hydration flask with black loop handle and straw mouth. Features a small holographic coding sticker ("404 Brain Not Found") and minor scrape on the bottom base.',
-      sanitized: true,
-      hasChallenge: true,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: '4',
-      itemCode: 'LC-8912',
-      title: 'Casio fx-991CW Scientific Calculator',
-      category: 'academic',
-      location: 'Engineering Lab 204',
-      custodyLocation: 'Engineering Lab Assistant',
-      status: 'in_custody',
-      date: 'Yesterday, 04:30 PM',
-      description: 'Standard engineering non-programmable scientific calculator. Has protective hard sliding cover. Clean condition with fresh battery.',
-      sanitized: true,
-      hasChallenge: false,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: '5',
-      itemCode: 'LC-8908',
-      title: 'Hostel Keys with Leather Tag',
-      category: 'keys',
-      location: 'Sports Complex (Court B Bleachers)',
-      custodyLocation: 'Security Main Post',
-      status: 'in_custody',
-      date: 'Yesterday, 06:15 PM',
-      description: "Ring with 3 brass door/wardrobe keys and an olive leather rectangular fob embossed with '#308'. Found after evening badminton practice.",
-      sanitized: true,
-      hasChallenge: false,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: '6',
-      itemCode: 'LC-8901',
-      title: 'Charcoal Grey Laptop Backpack',
-      category: 'bags',
-      location: 'Central Block (2nd Floor Staircase)',
-      custodyLocation: 'Central Security Desk (Room 104)',
-      status: 'in_custody',
-      date: '2 days ago, 02:00 PM',
-      description: 'Durable water-resistant backpack containing university lecture spiral notebooks, pens, and an umbrella in the side pocket. No identity card found inside.',
-      sanitized: true,
-      hasChallenge: false,
-      createdAt: new Date().toISOString()
-    }
-  ],
-  lostItems: [
-    {
-      id: 'lost_1',
-      title: 'Apple Pencil (2nd Gen)',
-      category: 'electronics',
-      approxLocation: 'Central Library 2nd Floor',
-      lostDateTime: 'Yesterday, 03:00 PM',
-      contactEmail: 'test.student@example.com',
-      studentId: '2600000',
-      description: 'White Apple Pencil with personalized engraved initials "TS" on the magnetic flat side.',
-      status: 'active',
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'lost_2',
-      title: 'Tan Leather Cardholder',
-      category: 'documents',
-      approxLocation: 'Audi Block Ground Floor',
-      lostDateTime: '2 days ago, 11:30 AM',
-      contactEmail: 'test.student@example.com',
-      studentId: '2600000',
-      description: 'Small tan leather cardholder containing metro card and cafeteria reload pass.',
-      status: 'active',
-      createdAt: new Date().toISOString()
-    }
-  ],
-  challenges: [
-    {
-      id: 'chal_1',
-      foundItemId: '1', // AirPods Pro
-      prompt: 'What color is the silicone tether strap attached to the white MagSafe charging case?',
-      answerNormalized: 'olive green'
-    },
-    {
-      id: 'chal_3',
-      foundItemId: '3', // Hydro flask
-      prompt: 'What specific text or slogan is written on the sticker attached to the bottle?',
-      answerNormalized: '404 brain not found'
-    }
-  ],
-  claims: []
-};
-
-// Load or write initial DB
-let dbData = { ...INITIAL_SEED };
-
-function loadDB() {
-  try {
-    if (fs.existsSync(DB_FILE)) {
-      const raw = fs.readFileSync(DB_FILE, 'utf8');
-      dbData = JSON.parse(raw);
-    } else {
-      saveDB();
-    }
-  } catch (err) {
-    console.error('Error loading DB file, falling back to in-memory seed:', err);
-  }
+function idFor(prefix) {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function saveDB() {
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(dbData, null, 2), 'utf8');
-  } catch (err) {
-    console.error('Error saving DB file:', err);
-  }
+function claimCode() {
+  return `LC-CLAIM-${Math.floor(1000 + Math.random() * 9000)}`;
 }
 
-// Initial load
-loadDB();
+async function seedCollection(Model, records) {
+  if (await Model.exists({})) return;
+  if (records.length === 0) return;
+  await Model.insertMany(records.map(({ id, ...record }) => ({ ...record, _id: String(id) })));
+}
+
+async function connect() {
+  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/lostconnect';
+  await mongoose.connect(uri);
+
+  const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+  await Promise.all([
+    seedCollection(User, seed.users || []),
+    seedCollection(FoundItem, seed.foundItems || []),
+    seedCollection(LostItem, seed.lostItems || []),
+    seedCollection(Challenge, seed.challenges || []),
+    seedCollection(Claim, seed.claims || [])
+  ]);
+}
+
+async function findItem(Model, id, fields = {}) {
+  const key = String(id);
+  const record = await Model.findOne({
+    $or: [{ _id: key }, ...(fields.itemCode ? [{ itemCode: key }] : [])]
+  }).lean();
+  return serialize(record);
+}
+
+async function updateStatus(Model, id, status, fields = {}) {
+  const key = String(id);
+  const record = await Model.findOneAndUpdate(
+    { $or: [{ _id: key }, ...(fields.itemCode ? [{ itemCode: key }] : [])] },
+    { $set: { status } },
+    { new: true, runValidators: true }
+  ).lean();
+  return serialize(record);
+}
+
+async function createRecord(Model, prefix, record) {
+  const saved = await new Model({ ...record, _id: idFor(prefix) }).save();
+  return serialize(saved.toObject());
+}
 
 module.exports = {
-  get: () => dbData,
-  save: saveDB,
+  connect,
+  mongoose,
 
-  // Users
-  getUserByEmail: (email) => dbData.users.find(u => u.email.toLowerCase() === email.toLowerCase()),
-  getUserByStudentId: (id) => dbData.users.find(u => u.studentId === id),
-  createUser: (user) => {
-    user.id = 'usr_' + Date.now();
-    dbData.users.push(user);
-    saveDB();
-    return user;
-  },
+  getUserByEmail: async email => serialize(await User.findOne({ email: email.toLowerCase().trim() }).lean()),
+  getUserByStudentId: async id => serialize(await User.findOne({ studentId: String(id) }).lean()),
+  createUser: user => createRecord(User, 'usr', { ...user, email: user.email.toLowerCase().trim() }),
 
-  // Found Items
-  getAllFoundItems: () => dbData.foundItems,
-  getFoundItemById: (id) => dbData.foundItems.find(i => String(i.id) === String(id) || i.itemCode === id),
-  createFoundItem: (item) => {
-    item.id = String(dbData.foundItems.length + 1);
-    item.itemCode = `LC-${Math.floor(1000 + Math.random() * 9000)}`;
-    item.status = item.status || 'in_custody';
-    item.createdAt = new Date().toISOString();
-    dbData.foundItems.unshift(item);
-    saveDB();
-    return item;
-  },
-  updateFoundItemStatus: (id, status) => {
-    const item = dbData.foundItems.find(i => String(i.id) === String(id) || i.itemCode === id);
-    if (item) {
-      item.status = status;
-      saveDB();
-    }
-    return item;
-  },
+  getAllFoundItems: async () => (await FoundItem.find().sort({ createdAt: -1 }).lean()).map(serialize),
+  getFoundItemById: id => findItem(FoundItem, id, { itemCode: true }),
+  createFoundItem: item => createRecord(FoundItem, 'found', {
+    ...item,
+    itemCode: item.itemCode || `LC-${Math.floor(1000 + Math.random() * 9000)}`,
+    status: item.status || 'in_custody',
+    createdAt: item.createdAt || new Date().toISOString()
+  }),
+  updateFoundItemStatus: (id, status) => updateStatus(FoundItem, id, status, { itemCode: true }),
 
-  // Lost Items
-  getAllLostItems: () => dbData.lostItems,
-  getLostItemById: (id) => dbData.lostItems.find(i => String(i.id) === String(id)),
-  getLostItemsByStudentId: (studentId) => dbData.lostItems.filter(i => i.studentId === studentId),
-  createLostItem: (item) => {
-    item.id = 'lost_' + Date.now();
-    item.status = 'active';
-    item.createdAt = new Date().toISOString();
-    dbData.lostItems.unshift(item);
-    saveDB();
-    return item;
-  },
-  updateLostItemStatus: (id, status) => {
-    const item = dbData.lostItems.find(i => String(i.id) === String(id));
-    if (item) {
-      item.status = status;
-      saveDB();
-    }
-    return item;
+  getAllLostItems: async () => (await LostItem.find().sort({ createdAt: -1 }).lean()).map(serialize),
+  getLostItemById: id => findItem(LostItem, id),
+  getLostItemsByStudentId: async studentId =>
+    (await LostItem.find({ studentId: String(studentId) }).sort({ createdAt: -1 }).lean()).map(serialize),
+  createLostItem: item => createRecord(LostItem, 'lost', {
+    ...item,
+    status: item.status || 'active',
+    createdAt: item.createdAt || new Date().toISOString()
+  }),
+  updateLostItemStatus: (id, status) => updateStatus(LostItem, id, status),
+
+  getChallengeByItemId: async foundItemId =>
+    serialize(await Challenge.findOne({ foundItemId: String(foundItemId) }).lean()),
+  createChallenge: challenge => {
+    const { answer, ...fields } = challenge;
+    return createRecord(Challenge, 'chal', {
+      ...fields,
+      answerNormalized: answer.toLowerCase().trim()
+    });
   },
 
-  // Blind Ownership Challenges
-  getChallengeByItemId: (foundItemId) => dbData.challenges.find(c => String(c.foundItemId) === String(foundItemId)),
-  createChallenge: (challenge) => {
-    challenge.id = 'chal_' + Date.now();
-    challenge.answerNormalized = challenge.answer.toLowerCase().trim();
-    dbData.challenges.push(challenge);
-    saveDB();
-    return challenge;
+  getAllClaims: async () => (await Claim.find().sort({ createdAt: -1 }).lean()).map(serialize),
+  getClaimById: async id => {
+    const key = String(id);
+    return serialize(await Claim.findOne({ $or: [{ _id: key }, { claimCode: key }] }).lean());
   },
-
-  // Claims
-  getAllClaims: () => dbData.claims,
-  getClaimById: (id) => dbData.claims.find(c => c.id === id || c.claimCode === id),
-  getClaimsByStudentId: (studentId) => dbData.claims.filter(c => c.studentId === studentId),
-  createClaim: (claim) => {
-    claim.id = 'claim_' + Date.now();
-    claim.claimCode = `LC-CLAIM-${Math.floor(1000 + Math.random() * 9000)}`;
-    claim.status = claim.status || 'pending_verification';
-    claim.createdAt = new Date().toISOString();
-    // Static QR string payload for offline decoding
-    claim.qrPayload = `LOSTCONNECT:${claim.claimCode}:${claim.studentId}:${claim.foundItemId}`;
-    dbData.claims.unshift(claim);
-    saveDB();
-    return claim;
+  getClaimsByStudentId: async studentId =>
+    (await Claim.find({ studentId: String(studentId) }).sort({ createdAt: -1 }).lean()).map(serialize),
+  createClaim: async claim => {
+    const code = claim.claimCode || claimCode();
+    return createRecord(Claim, 'claim', {
+      ...claim,
+      claimCode: code,
+      status: claim.status || 'pending_verification',
+      createdAt: claim.createdAt || new Date().toISOString(),
+      qrPayload: claim.qrPayload || `LOSTCONNECT:${code}:${claim.studentId}:${claim.foundItemId}`
+    });
   },
-  updateClaimHandover: (claimId, officerNotes, officerBadge) => {
-    const claim = dbData.claims.find(c => c.id === claimId || c.claimCode === claimId);
-    if (claim) {
-      claim.status = 'handed_over';
-      claim.handedOverAt = new Date().toISOString();
-      claim.officerNotes = officerNotes;
-      claim.officerBadge = officerBadge || 'SEC-ROOM104';
-
-      // Also update associated found item to returned
-      const item = dbData.foundItems.find(i => String(i.id) === String(claim.foundItemId));
-      if (item) {
-        item.status = 'returned';
-      }
-      saveDB();
-    }
-    return claim;
+  updateClaimHandover: async (claimId, officerNotes, officerBadge) => {
+    const key = String(claimId);
+    const claim = await Claim.findOneAndUpdate(
+      { $or: [{ _id: key }, { claimCode: key }] },
+      {
+        $set: {
+          status: 'handed_over',
+          handedOverAt: new Date().toISOString(),
+          officerNotes,
+          officerBadge: officerBadge || 'SEC-ROOM104'
+        }
+      },
+      { new: true, runValidators: true }
+    ).lean();
+    if (!claim) return null;
+    await FoundItem.findByIdAndUpdate(claim.foundItemId, { $set: { status: 'returned' } });
+    return serialize(claim);
   }
 };

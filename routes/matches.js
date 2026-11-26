@@ -9,13 +9,13 @@ const db = require('../services/db');
 const { findMatches } = require('../services/matcher');
 
 // GET /api/matches/:lostItemId
-router.get('/:lostItemId', (req, res) => {
-  const lostItem = db.getLostItemById(req.params.lostItemId);
+router.get('/:lostItemId', async (req, res) => {
+  const lostItem = await db.getLostItemById(req.params.lostItemId);
   if (!lostItem) {
     return res.status(404).json({ error: 'Lost item report not found' });
   }
 
-  const activeFoundItems = db.getAllFoundItems().filter(i => i.status !== 'returned');
+  const activeFoundItems = (await db.getAllFoundItems()).filter(i => i.status !== 'returned');
   const matches = findMatches(lostItem, activeFoundItems);
 
   res.json({
@@ -32,12 +32,12 @@ router.get('/:lostItemId', (req, res) => {
 });
 
 // POST /api/matches/re-scan (Triggered by "Re-Scan" button in UI)
-router.post('/re-scan', (req, res) => {
+router.post('/re-scan', async (req, res) => {
   const { lostItemId } = req.body;
-  const activeFoundItems = db.getAllFoundItems().filter(i => i.status !== 'returned');
+  const activeFoundItems = (await db.getAllFoundItems()).filter(i => i.status !== 'returned');
 
   if (lostItemId) {
-    const lostItem = db.getLostItemById(lostItemId);
+    const lostItem = await db.getLostItemById(lostItemId);
     if (!lostItem) {
       return res.status(404).json({ error: 'Lost item report not found' });
     }
@@ -52,7 +52,7 @@ router.post('/re-scan', (req, res) => {
   }
 
   // Otherwise re-scan for all active lost reports
-  const activeLostItems = db.getAllLostItems().filter(l => l.status === 'active');
+  const activeLostItems = (await db.getAllLostItems()).filter(l => l.status === 'active');
   const batchResults = activeLostItems.map(lost => ({
     lostItemId: lost.id,
     lostTitle: lost.title,

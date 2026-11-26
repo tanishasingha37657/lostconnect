@@ -11,9 +11,9 @@ const { findMatches } = require('../services/matcher');
 const { sendMatchNotificationEmail } = require('../services/email');
 
 // GET /api/found-items (Search & Filter)
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const { search, category, location, status } = req.query;
-  let items = db.getAllFoundItems();
+  let items = await db.getAllFoundItems();
 
   if (category && category !== 'all') {
     items = items.filter(i => i.category.toLowerCase() === category.toLowerCase());
@@ -37,13 +37,10 @@ router.get('/', (req, res) => {
   }
 
   // Hide internal answers for security, expose challenge flag
-  const safeItems = items.map(item => {
-    const challenge = db.getChallengeByItemId(item.id);
-    return {
-      ...item,
-      hasChallenge: !!challenge
-    };
-  });
+  const safeItems = await Promise.all(items.map(async item => ({
+    ...item,
+    hasChallenge: !!(await db.getChallengeByItemId(item.id))
+  })));
 
   res.json({
     success: true,
@@ -53,13 +50,13 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/found-items/:id
-router.get('/:id', (req, res) => {
-  const item = db.getFoundItemById(req.params.id);
+router.get('/:id', async (req, res) => {
+  const item = await db.getFoundItemById(req.params.id);
   if (!item) {
     return res.status(404).json({ error: 'Found item not found' });
   }
 
-  const challenge = db.getChallengeByItemId(item.id);
+  const challenge = await db.getChallengeByItemId(item.id);
 
   res.json({
     success: true,
@@ -73,7 +70,7 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /api/found-items (Report Found Item)
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const {
     title,
     category,
@@ -95,7 +92,7 @@ router.post('/', (req, res) => {
   // Automated PII Redaction on description before storing
   const piiResult = sanitizeText(description);
 
-  const newItem = db.createFoundItem({
+  const newItem = await db.createFoundItem({
     title,
     category,
     location,
@@ -116,7 +113,7 @@ router.post('/', (req, res) => {
   // If founder provided a Blind Ownership Challenge, register it
   let registeredChallenge = null;
   if (challengeQuestion && challengeAnswer) {
-    registeredChallenge = db.createChallenge({
+    registeredChallenge = await db.createChallenge({
       foundItemId: newItem.id,
       prompt: challengeQuestion,
       answer: challengeAnswer
@@ -124,7 +121,7 @@ router.post('/', (req, res) => {
   }
 
   // Cross-check in-process TF-IDF against active lost items
-  const activeLostItems = db.getAllLostItems().filter(l => l.status === 'active');
+  const activeLostItems = (await db.getAllLostItems()).filter(l => l.status === 'active');
   const prospectiveMatches = [];
   for (const lost of activeLostItems) {
     const matches = findMatches(lost, [newItem]);
@@ -161,13 +158,13 @@ router.post('/', (req, res) => {
 });
 
 // PATCH /api/found-items/:id/status
-router.patch('/:id/status', (req, res) => {
+router.patch('/:id/status', async (req, res) => {
   const { status } = req.body;
   if (!status) {
     return res.status(400).json({ error: 'Status is required' });
   }
 
-  const updated = db.updateFoundItemStatus(req.params.id, status);
+  const updated = await db.updateFoundItemStatus(req.params.id, status);
   if (!updated) {
     return res.status(404).json({ error: 'Found item not found' });
   }
