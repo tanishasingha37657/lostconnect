@@ -12,6 +12,10 @@ LostConnect is a campus lost-and-found portal built with React, Express, Node.js
 
 The server seeds empty MongoDB collections from `data/seed.json` when it starts. Existing collections are left intact. For a production build, run `npm run build` and then `npm start`; Express serves the built React app.
 
+## Found-item catalog API
+
+`GET /api/found-items` supports `search`, `category`, `location`, and `status` query parameters. Use `GET /api/found-items/:id`, `POST /api/found-items`, `PUT /api/found-items/:id`, and `DELETE /api/found-items/:id` to read, create, update, and delete records. The React catalog uses these endpoints for filtering and item management.
+
 ## Demo sign-in
 
 Use `test.student@example.com` to try the seeded student account. Authentication is a demo campus-email flow; configure a real identity provider before using the portal for real accounts.

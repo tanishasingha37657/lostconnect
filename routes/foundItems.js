@@ -14,13 +14,14 @@ const { sendMatchNotificationEmail } = require('../services/email');
 router.get('/', async (req, res) => {
   const { search, category, location, status } = req.query;
   let items = await db.getAllFoundItems();
+  const locations = [...new Set(items.map(item => item.location).filter(Boolean))].sort();
 
   if (category && category !== 'all') {
-    items = items.filter(i => i.category.toLowerCase() === category.toLowerCase());
+    items = items.filter(i => (i.category || '').toLowerCase() === category.toLowerCase());
   }
 
   if (location && location !== 'all') {
-    items = items.filter(i => i.location.toLowerCase().includes(location.toLowerCase()));
+    items = items.filter(i => (i.location || '').toLowerCase().includes(location.toLowerCase()));
   }
 
   if (status && status !== 'all') {
@@ -28,11 +29,11 @@ router.get('/', async (req, res) => {
   }
 
   if (search && search.trim() !== '') {
-    const q = search.toLowerCase().trim();
+    const q = String(search).toLowerCase().trim();
     items = items.filter(i =>
-      i.title.toLowerCase().includes(q) ||
-      i.location.toLowerCase().includes(q) ||
-      (i.description && i.description.toLowerCase().includes(q))
+      (i.title || '').toLowerCase().includes(q) ||
+      (i.location || '').toLowerCase().includes(q) ||
+      (i.description || '').toLowerCase().includes(q)
     );
   }
 
@@ -45,6 +46,7 @@ router.get('/', async (req, res) => {
   res.json({
     success: true,
     total: safeItems.length,
+    locations,
     items: safeItems
   });
 });
@@ -155,6 +157,36 @@ router.post('/', async (req, res) => {
     prospectiveLostMatchesFound: prospectiveMatches.length,
     prospectiveMatches
   });
+});
+
+// PUT /api/found-items/:id (Update a catalog item)
+router.put('/:id', async (req, res) => {
+  const { title, category, location, custodyLocation, description, photoUrl } = req.body;
+  if (!title || !category || !location || !description) {
+    return res.status(400).json({ error: 'Title, category, location, and description are required' });
+  }
+
+  const piiResult = sanitizeText(description);
+  const item = await db.updateFoundItem(req.params.id, {
+    title,
+    category,
+    location,
+    custodyLocation: custodyLocation || 'Central Security Desk (Room 104)',
+    description: piiResult.sanitized,
+    rawDescriptionOriginal: piiResult.original,
+    redactedPiiCount: piiResult.redactedCount,
+    photoUrl: photoUrl || ''
+  });
+  if (!item) return res.status(404).json({ error: 'Found item not found' });
+
+  res.json({ success: true, item, piiSanitized: piiResult.redactedCount > 0 });
+});
+
+// DELETE /api/found-items/:id
+router.delete('/:id', async (req, res) => {
+  const item = await db.deleteFoundItem(req.params.id);
+  if (!item) return res.status(404).json({ error: 'Found item not found' });
+  res.json({ success: true, item });
 });
 
 // PATCH /api/found-items/:id/status

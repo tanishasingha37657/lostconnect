@@ -78,6 +78,28 @@ module.exports = {
     status: item.status || 'in_custody',
     createdAt: item.createdAt || new Date().toISOString()
   }),
+  updateFoundItem: async (id, fields) => {
+    const key = String(id);
+    const item = await FoundItem.findOneAndUpdate(
+      { $or: [{ _id: key }, { itemCode: key }] },
+      { $set: fields },
+      { new: true, runValidators: true }
+    ).lean();
+    return serialize(item);
+  },
+  deleteFoundItem: async id => {
+    const key = String(id);
+    const item = await FoundItem.findOneAndDelete({
+      $or: [{ _id: key }, { itemCode: key }]
+    }).lean();
+    if (!item) return null;
+    const itemId = String(item._id);
+    await Promise.all([
+      Challenge.deleteMany({ foundItemId: itemId }),
+      Claim.deleteMany({ foundItemId: itemId })
+    ]);
+    return serialize(item);
+  },
   updateFoundItemStatus: (id, status) => updateStatus(FoundItem, id, status, { itemCode: true }),
 
   getAllLostItems: async () => (await LostItem.find().sort({ createdAt: -1 }).lean()).map(serialize),

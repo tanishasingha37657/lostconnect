@@ -50,6 +50,7 @@ function Field({ label, children }) {
 
 function App() {
   const [items, setItems] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [reports, setReports] = useState([]);
   const [claims, setClaims] = useState([]);
   const searchInput = useRef(null);
@@ -67,24 +68,40 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState('');
 
+  const itemQuery = useCallback(() => {
+    const params = new URLSearchParams();
+    if (query.trim()) params.set('search', query.trim());
+    if (category !== 'all') params.set('category', category);
+    if (location !== 'all') params.set('location', location);
+    const suffix = params.toString();
+    return `/api/found-items${suffix ? `?${suffix}` : ''}`;
+  }, [query, category, location]);
+
   const notify = useCallback((message, tone = 'success') => {
     setToast({ message, tone });
     window.setTimeout(() => setToast(null), 4200);
   }, []);
 
   const refreshItems = useCallback(async () => {
-    const data = await request('/api/found-items');
+    const data = await request(itemQuery());
     setItems(data.items);
-  }, []);
+    setLocations(data.locations || []);
+  }, [itemQuery]);
 
   useEffect(() => {
     let active = true;
-    request('/api/found-items')
-      .then(data => { if (active) setItems(data.items); })
+    setLoading(true);
+    request(itemQuery())
+      .then(data => {
+        if (active) {
+          setItems(data.items);
+          setLocations(data.locations || []);
+        }
+      })
       .catch(error => { if (active) notify(error.message, 'error'); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [notify]);
+  }, [itemQuery, notify]);
 
   useEffect(() => {
     const token = localStorage.getItem('lostconnect-token');
@@ -144,17 +161,7 @@ function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  const locations = useMemo(
-    () => [...new Set(items.map(item => item.location).filter(Boolean))].sort(),
-    [items],
-  );
-  const visibleItems = useMemo(() => items.filter(item => {
-    const text = `${item.title} ${item.description || ''} ${item.location || ''}`.toLowerCase();
-    return (category === 'all' || item.category === category)
-      && (location === 'all' || item.location === location)
-      && (!query.trim() || text.includes(query.trim().toLowerCase()))
-      && item.status !== 'returned';
-  }), [items, category, location, query]);
+  const visibleItems = useMemo(() => items.filter(item => item.status !== 'returned'), [items]);
 
   function showModal(name) {
     setModal(name);
@@ -217,6 +224,68 @@ function App() {
       setChallengePrompt(data.item.challengePrompt || '');
     } catch (error) {
       notify(error.message, 'error');
+    }
+  }
+
+  async function updateFoundItem(event) {
+    event.preventDefault();
+    if (!selectedItem) return;
+    setBusy(true);
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    try {
+      const photo = values.get('photo');
+      const payload = Object.fromEntries(values.entries());
+      delete payload.photo;
+      payload.photoUrl = photo?.name ? await uploadPhoto(photo) : selectedItem.photoUrl || '';
+      const data = await request(`/api/found-items/${encodeURIComponent(selectedItem.id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      setSelectedItem(data.item);
+      setModal('details');
+      await refreshItems();
+      notify('Found item updated.');
+    } catch (error) {
+      notify(error.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteFoundItem() {
+    if (!selectedItem || !window.confirm(`Delete "${selectedItem.title}" from the catalog?`)) return;
+    setBusy(true);
+    try {
+      await request(`/api/found-items/${encodeURIComponent(selectedItem.id)}`, { method: 'DELETE' });
+      setSelectedItem(null);
+      setModal('');
+      await refreshItems();
+      notify('Found item deleted.');
+    } catch (error) {
+      notify(error.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function markItemReturned() {
+    if (!selectedItem) return;
+    setBusy(true);
+    try {
+      const data = await request(`/api/found-items/${encodeURIComponent(selectedItem.id)}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'returned' }),
+      });
+      setSelectedItem(data.item);
+      await refreshItems();
+      notify('Item marked as returned.');
+    } catch (error) {
+      notify(error.message, 'error');
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -495,6 +564,26 @@ function App() {
             <p className="detail-description">{selectedItem.description}</p>
             {challengePrompt && <div className="challenge-box"><strong>Private ownership check</strong><span>This item has an owner-only verification question. Answer it during the claim process.</span></div>}
             <button className="button button-primary button-wide" onClick={() => requireSignIn('claim')}>Claim this item</button>
+            <div className="catalog-footer">
+              <button className="button button-outline" onClick={() => setModal('edit-item')}>Edit item</button>
+              {selectedItem.status !== 'returned' && <button className="button button-outline" onClick={markItemReturned} disabled={busy}>Mark returned</button>}
+              <button className="text-button" onClick={deleteFoundItem} disabled={busy}>Delete item</button>
+            </div>
+          </>}
+
+          {modal === 'edit-item' && selectedItem && <>
+            <p className="eyebrow">CATALOG MANAGEMENT</p><h2 id="modal-title">Edit found item</h2>
+            <form className="form-stack" onSubmit={updateFoundItem}>
+              <Field label="Item name"><input name="title" defaultValue={selectedItem.title} required /></Field>
+              <div className="form-row">
+                <Field label="Category"><select name="category" defaultValue={selectedItem.category} required>{categories.map(([value, name]) => <option key={value} value={value}>{name}</option>)}</select></Field>
+                <Field label="Location"><input name="location" defaultValue={selectedItem.location} required /></Field>
+              </div>
+              <Field label="Custody location"><input name="custodyLocation" defaultValue={selectedItem.custodyLocation || ''} /></Field>
+              <Field label="Description"><textarea name="description" rows="3" defaultValue={selectedItem.description} required /></Field>
+              <Field label="Replace photo (optional)"><input name="photo" type="file" accept="image/png,image/jpeg,image/webp,image/gif" /></Field>
+              <button className="button button-primary button-wide" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button>
+            </form>
           </>}
 
           {modal === 'claim' && selectedItem && <>
