@@ -383,7 +383,6 @@ function App() {
               <a className="button button-primary" href="#browse">Browse found items <span>→</span></a>
               <button className="button button-light" onClick={() => requireSignIn('lost')}>Report a lost item</button>
             </div>
-            <div className="hero-note"><span>✦</span> Verified campus reports · Safe pickup at Room 104</div>
           </div>
           <div className="hero-art" aria-label="Lost and found illustration">
             <div className="art-sun" />
